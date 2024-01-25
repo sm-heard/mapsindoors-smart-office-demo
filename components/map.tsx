@@ -110,6 +110,7 @@ export default function Map() {
     directionsRendererRef.current = directionsRenderer;
 
     mapsIndoors.on("ready", async () => {
+        await delay(1000);
       mapboxMap.flyTo({
         center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
         zoom: 21,
