@@ -94,32 +94,30 @@ export default function Map() {
     const mapboxMap = mapboxMapRef.current;
     const mapsIndoors = mapsIndoorsRef.current;
 
-    await delay(1000);
+    toast("Austin Office", {
+        duration: 9000,
+        icon: <Building />,
+      });
 
     mapboxMap.flyTo({
         center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
         zoom: 19,
         pitch: mapViewOptions.pitch,
         bearing: mapViewOptions.bearing + 45,
-        duration: 3500,
+        duration: 4500,
       });
 
-      toast("Austin Office", {
-        duration: 8000,
-        icon: <Building />,
-      });
-
-    await delay(1000);
+    await delay(6000);
 
     mapboxMap.flyTo({
       center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
       zoom: 21,
       pitch: mapViewOptions.pitch,
       bearing: mapViewOptions.bearing + 90,
-      duration: 3500,
+      duration: 4500,
     });
 
-    await delay(7000);
+    await delay(3000);
 
     setButtonDisabledAnimation(false);
   };
