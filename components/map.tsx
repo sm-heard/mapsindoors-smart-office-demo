@@ -107,7 +107,7 @@ export default function Map() {
         duration: 4500,
       });
 
-    await delay(6000);
+    await delay(5000);
 
     mapboxMap.flyTo({
       center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
@@ -117,7 +117,7 @@ export default function Map() {
       duration: 4500,
     });
 
-    await delay(3000);
+    await delay(4000);
 
     setButtonDisabledAnimation(false);
   };
