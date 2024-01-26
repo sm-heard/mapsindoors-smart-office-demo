@@ -153,7 +153,7 @@ export default function Map() {
     const handleClick = (location) => {
       mapsIndoors.selectLocation(location);
       toast(location.properties.name, {
-        duration: 4000,
+        duration: 3000,
         position: "top-center",
         icon: <MapPin />,
       });
@@ -174,7 +174,7 @@ export default function Map() {
           </div>
         </div>,
         {
-          duration: 4000,
+          duration: 3000,
           position: "bottom-center",
         }
       );
@@ -182,9 +182,9 @@ export default function Map() {
 
     mapsIndoors.on("click", handleClick);
 
-    // return () => {
-    //   mapsIndoors.off("click", handleClick);
-    // };
+    return () => {
+      mapsIndoors.off("click", handleClick);
+    };
   }, []);
 
   return (
