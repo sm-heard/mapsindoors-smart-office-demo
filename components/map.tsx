@@ -9,6 +9,11 @@ import {
   Settings,
   Box,
   Diamond,
+  User,
+  Thermometer,
+  Building,
+  LandPlot,
+  MapPin,
 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -23,6 +28,19 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function Map() {
   const mapsindoors = window.mapsindoors;
@@ -56,7 +74,7 @@ export default function Map() {
     minZoom: 16,
     maxZoom: 25,
     pitch: 35,
-    bearing: 54,
+    bearing: 9,
     lightPreset: lightPresetState,
     mapsIndoorsTransitionLevel: 19,
     // showMapboxExtrusionsZoomTo: 20,
@@ -72,14 +90,39 @@ export default function Map() {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  function calculateBearing(startLat, startLng, endLat, endLng) {
-    var startY = Math.cos(endLat) * Math.sin(endLng - startLng);
-    var startX =
-      Math.cos(startLat) * Math.sin(endLat) -
-      Math.sin(startLat) * Math.cos(endLat) * Math.cos(endLng - startLng);
-    var bearing = (Math.atan2(startY, startX) * 180) / Math.PI;
-    return (bearing + 360) % 360;
-  }
+  const goToVenue = async () => {
+    const mapboxMap = mapboxMapRef.current;
+    const mapsIndoors = mapsIndoorsRef.current;
+
+    await delay(1000);
+
+    mapboxMap.flyTo({
+        center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
+        zoom: 19,
+        pitch: mapViewOptions.pitch,
+        bearing: mapViewOptions.bearing + 45,
+        duration: 3500,
+      });
+
+      toast("Austin Office", {
+        duration: 8000,
+        icon: <Building />,
+      });
+
+    await delay(1000);
+
+    mapboxMap.flyTo({
+      center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
+      zoom: 21,
+      pitch: mapViewOptions.pitch,
+      bearing: mapViewOptions.bearing + 90,
+      duration: 3500,
+    });
+
+    await delay(7000);
+
+    setButtonDisabledAnimation(false);
+  };
 
   useEffect(() => {
     mapViewOptions.element = mapContainerRef.current;
@@ -109,18 +152,41 @@ export default function Map() {
     directionsServiceRef.current = directionsService;
     directionsRendererRef.current = directionsRenderer;
 
-    mapsIndoors.on("ready", async () => {
-        await delay(1000);
-      mapboxMap.flyTo({
-        center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
-        zoom: 21,
-        pitch: mapViewOptions.pitch,
-        bearing: mapViewOptions.bearing + 45,
-        duration: 11500,
+    const handleClick = (location) => {
+      mapsIndoors.selectLocation(location);
+      toast(location.properties.name, {
+        duration: 4000,
+        position: "top-center",
+        icon: <MapPin />,
       });
-      await delay(11500);
-      setButtonDisabledAnimation(false);
-    });
+      toast(
+        <div className="">
+          <div className="flex space-x-4">
+            <Badge>
+              <User className="mr-2" />4
+            </Badge>
+            <Badge>
+              <Thermometer className="mr-2" />
+              21°C
+            </Badge>
+            <Badge>
+              <LandPlot className="mr-2" />
+              22 m²
+            </Badge>
+          </div>
+        </div>,
+        {
+          duration: 4000,
+          position: "bottom-center",
+        }
+      );
+    };
+
+    mapsIndoors.on("click", handleClick);
+
+    // return () => {
+    //   mapsIndoors.off("click", handleClick);
+    // };
   }, []);
 
   return (
@@ -219,6 +285,27 @@ export default function Map() {
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
+
+      <Dialog defaultOpen={true} onOpenChange={goToVenue}>
+        {/* <DialogTrigger></DialogTrigger> */}
+        <DialogContent className="justify-center items-center">
+          <DialogHeader>
+            <DialogTitle>MapsPeople Smart Office App</DialogTitle>
+            <DialogDescription className="flex justify-center items-center">
+              Smart office demo app.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="">
+            <DialogClose asChild className="mx-auto">
+              <Button type="button" variant="secondary">
+                Continue
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Toaster position="top-center" visibleToasts={1} />
 
       <div ref={mapContainerRef} className="min-h-screen" />
     </>
