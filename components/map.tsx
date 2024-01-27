@@ -95,17 +95,18 @@ export default function Map() {
     const mapsIndoors = mapsIndoorsRef.current;
 
     toast("Austin Office", {
-        duration: 9000,
-        icon: <Building />,
-      });
+      duration: 9000,
+      icon: <Building />,
+      className: "justify-center",
+    });
 
     mapboxMap.flyTo({
-        center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
-        zoom: 19,
-        pitch: mapViewOptions.pitch,
-        bearing: mapViewOptions.bearing + 45,
-        duration: 4500,
-      });
+      center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
+      zoom: 19,
+      pitch: mapViewOptions.pitch,
+      bearing: mapViewOptions.bearing + 45,
+      duration: 4500,
+    });
 
     await delay(5000);
 
@@ -150,32 +151,122 @@ export default function Map() {
     directionsServiceRef.current = directionsService;
     directionsRendererRef.current = directionsRenderer;
 
+    let parkingDisplayRule;
+    mapsindoors.services.LocationsService.getLocation(
+      "7219d41d7ebe4f26a334636a"
+    ).then((location) => {
+      parkingDisplayRule = mapsIndoors.getDisplayRule(location);
+    });
+
+    let smallMeetingRoomDisplayRule;
+    mapsindoors.services.LocationsService.getLocation(
+      "9297339ed8c0419da4264c5b"
+    ).then((location) => {
+      smallMeetingRoomDisplayRule = mapsIndoors.getDisplayRule(location);
+    });
+
+    let mediumMeetingRoomDisplayRule;
+    mapsindoors.services.LocationsService.getLocation(
+      "e918620e841e4c3ca91d6672"
+    ).then((location) => {
+      mediumMeetingRoomDisplayRule = mapsIndoors.getDisplayRule(location);
+    });
+
+    let workstationDisplayRule;
+    mapsindoors.services.LocationsService.getLocation(
+      "a03dd7e567704711aed66d76"
+    ).then((location) => {
+      workstationDisplayRule = mapsIndoors.getDisplayRule(location);
+      delete workstationDisplayRule.model3DRotationX;
+      delete workstationDisplayRule.model3DRotationY;
+      delete workstationDisplayRule.model3DRotationZ;
+    });
+
     const handleClick = (location) => {
       mapsIndoors.selectLocation(location);
-      toast(location.properties.name, {
-        duration: 3000,
-        position: "top-center",
-        icon: <MapPin />,
-      });
+      const locationType = location.properties.type;
       toast(
-        <div className="">
-          <div className="flex space-x-4">
-            <Badge>
+        <div className="flex flex-col mx-auto">
+          <div className="flex flex-row justify-center mb-2 font-extrabold text-lg">
+            <MapPin className="mx-2" />
+            {location.properties.name}
+          </div>
+          <div className="space-x-4">
+            <Badge variant="secondary" className="">
               <User className="mr-2" />4
             </Badge>
-            <Badge>
+            <Badge variant="secondary" className="">
               <Thermometer className="mr-2" />
               21°C
             </Badge>
-            <Badge>
+            <Badge variant="secondary" className="">
               <LandPlot className="mr-2" />
               22 m²
             </Badge>
           </div>
+          {locationType === "MeetingRoom Small" && (
+            <div className="flex flex-row justify-center mt-8">
+              <Button
+                onClick={() => {
+                  mapsIndoors.overrideDisplayRule(
+                    location.id,
+                    smallMeetingRoomDisplayRule
+                  );
+                }}
+              >
+                Book Room
+              </Button>
+            </div>
+          )}
+
+          {locationType === "MeetingRoom Medium" && (
+            <div className="flex flex-row justify-center mt-8">
+              <Button
+                onClick={() => {
+                  mapsIndoors.overrideDisplayRule(
+                    location.id,
+                    mediumMeetingRoomDisplayRule
+                  );
+                }}
+              >
+                Book Room
+              </Button>
+            </div>
+          )}
+
+          {locationType === "Workstation 1.4m" && (
+            <div className="flex flex-row justify-center mt-8">
+              <Button
+                onClick={() => {
+                  mapsIndoors.overrideDisplayRule(
+                    location.id,
+                    workstationDisplayRule
+                  );
+                }}
+              >
+                Book Workstation
+              </Button>
+            </div>
+          )}
+
+          {locationType === "Parking" && (
+            <div className="flex flex-row justify-center mt-8">
+              <Button
+                onClick={() => {
+                  mapsIndoors.overrideDisplayRule(
+                    location.id,
+                    parkingDisplayRule
+                  );
+                }}
+              >
+                Reserve Parking
+              </Button>
+            </div>
+          )}
         </div>,
         {
-          duration: 3000,
-          position: "bottom-center",
+          duration: 10000,
+          position: "top-center",
         }
       );
     };
