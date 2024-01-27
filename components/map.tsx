@@ -212,6 +212,7 @@ export default function Map() {
                     location.id,
                     smallMeetingRoomDisplayRule
                   );
+                  toast.dismiss();
                 }}
               >
                 Book Room
@@ -227,6 +228,7 @@ export default function Map() {
                     location.id,
                     mediumMeetingRoomDisplayRule
                   );
+                  toast.dismiss();
                 }}
               >
                 Book Room
@@ -242,6 +244,7 @@ export default function Map() {
                     location.id,
                     workstationDisplayRule
                   );
+                  toast.dismiss();
                 }}
               >
                 Book Workstation
@@ -257,6 +260,7 @@ export default function Map() {
                     location.id,
                     parkingDisplayRule
                   );
+                  toast.dismiss();
                 }}
               >
                 Reserve Parking
