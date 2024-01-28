@@ -163,6 +163,9 @@ export default function Map() {
       "9297339ed8c0419da4264c5b"
     ).then((location) => {
       smallMeetingRoomDisplayRule = mapsIndoors.getDisplayRule(location);
+      delete smallMeetingRoomDisplayRule.model3DRotationX;
+      delete smallMeetingRoomDisplayRule.model3DRotationY;
+      delete smallMeetingRoomDisplayRule.model3DRotationZ;
     });
 
     let mediumMeetingRoomDisplayRule;
@@ -170,6 +173,9 @@ export default function Map() {
       "e918620e841e4c3ca91d6672"
     ).then((location) => {
       mediumMeetingRoomDisplayRule = mapsIndoors.getDisplayRule(location);
+      delete mediumMeetingRoomDisplayRule.model3DRotationX;
+      delete mediumMeetingRoomDisplayRule.model3DRotationY;
+      delete mediumMeetingRoomDisplayRule.model3DRotationZ;
     });
 
     let workstationDisplayRule;
