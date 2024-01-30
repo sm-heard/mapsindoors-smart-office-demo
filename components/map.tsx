@@ -42,6 +42,18 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import { Label } from "@/components/ui/label";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 export default function Map() {
   const mapsindoors = window.mapsindoors;
   const mapboxgl = window.mapboxgl;
@@ -54,6 +66,7 @@ export default function Map() {
 
   const [lightPresetState, setLightPresetState] = useState("dawn");
   const [dimensionState, setDimensionState] = useState("3d");
+  const [loginState, setLoginState] = useState("staff");
 
   const [locationsList, setLocationsList] = useState([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
@@ -391,10 +404,31 @@ export default function Map() {
           <DialogHeader>
             <DialogTitle>MapsPeople Smart Office App</DialogTitle>
             <DialogDescription className="flex justify-center items-center">
-              Smart office demo app.
+              Smart Office Demo
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="">
+          <div className="flex justify-center items-center">Logged in as:</div>
+          <div className="flex justify-center items-center mb-6">
+            <Select
+              value={loginState}
+              onValueChange={(value) => {
+                setLoginState(value);
+              }}
+            >
+              <SelectTrigger className="w-[140px] mx-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="staff">Staff</SelectItem>
+                <SelectItem value="maintenance">Maintenance</SelectItem>
+              </SelectContent>
+            </Select>
+            <Avatar>
+              <AvatarImage src={`${loginState}.png`} />
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+          </div>
+          <DialogFooter className="flex">
             <DialogClose asChild className="mx-auto">
               <Button type="button" variant="secondary">
                 Continue
