@@ -398,14 +398,38 @@ export default function Map() {
         </DrawerContent>
       </Drawer>
 
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button
+            size="icon"
+            variant="secondary"
+            className="absolute z-50 top-5 left-5"
+            disabled={buttonDisabledAnimation}
+          >
+            <Avatar className="p-1">
+              <AvatarImage src={`${loginState}.png`} />
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle className="place-self-center">{loginState.toUpperCase()}</DrawerTitle>
+          </DrawerHeader>
+          <DrawerFooter>
+            
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
       <Dialog defaultOpen={true} onOpenChange={goToVenue}>
         {/* <DialogTrigger></DialogTrigger> */}
         <DialogContent className="justify-center items-center">
           <DialogHeader>
             <DialogTitle>MapsPeople Smart Office App</DialogTitle>
-            <DialogDescription className="flex justify-center items-center">
+            {/* <DialogDescription className="flex justify-center items-center">
               Smart Office Demo
-            </DialogDescription>
+            </DialogDescription> */}
           </DialogHeader>
           <div className="flex justify-center items-center">Logged in as:</div>
           <div className="flex justify-center items-center mb-6">
