@@ -14,6 +14,7 @@ import {
   Building,
   LandPlot,
   MapPin,
+  MapPinned,
 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -82,6 +83,7 @@ export default function Map() {
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
     element: undefined,
+    // localFontFamily: "Lato",
     center: { lat: 30.3605298, lng: -97.7421781, floor: 0 },
     zoom: 17,
     minZoom: 16,
@@ -90,13 +92,7 @@ export default function Map() {
     bearing: 9,
     lightPreset: lightPresetState,
     mapsIndoorsTransitionLevel: 19,
-    // showMapboxExtrusionsZoomTo: 20,
-    // hideMapboxExtrusionsZoomFrom: 22,
     showMapMarkers: undefined,
-    // bounds: [
-    //   [-97.72107723039518, 30.40456044442378],
-    //   [-97.72103878321172, 30.405409581795666],
-    // ],
   };
 
   function delay(ms) {
@@ -163,6 +159,10 @@ export default function Map() {
 
     directionsServiceRef.current = directionsService;
     directionsRendererRef.current = directionsRenderer;
+
+    mapsindoors.services.SolutionsService.getUserRoles().then(userRoles => {
+      
+    });
 
     let parkingDisplayRule;
     mapsindoors.services.LocationsService.getLocation(
@@ -307,7 +307,7 @@ export default function Map() {
         <DrawerTrigger asChild>
           <Button
             size="icon"
-            className="absolute z-50 top-5 right-5"
+            className="absolute z-50 top-5 right-8"
             disabled={buttonDisabledAnimation}
           >
             <Settings />
@@ -403,7 +403,7 @@ export default function Map() {
           <Button
             size="icon"
             variant="secondary"
-            className="absolute z-50 top-5 left-5"
+            className="absolute z-50 top-5 left-8"
             disabled={buttonDisabledAnimation}
           >
             <Avatar className="p-1">
@@ -426,7 +426,7 @@ export default function Map() {
         {/* <DialogTrigger></DialogTrigger> */}
         <DialogContent className="justify-center items-center">
           <DialogHeader>
-            <DialogTitle>MapsPeople Smart Office App</DialogTitle>
+            <DialogTitle className="flex justify-center items-center"><MapPinned /></DialogTitle>
             {/* <DialogDescription className="flex justify-center items-center">
               Smart Office Demo
             </DialogDescription> */}
@@ -464,7 +464,7 @@ export default function Map() {
 
       <Toaster position="top-center" visibleToasts={1} />
 
-      <div ref={mapContainerRef} className="min-h-screen" />
+      <div ref={mapContainerRef} className="w-[97vw] mx-auto rounded-md" style={{ height: 'calc(97vh - 56px)' }} />
     </>
   );
 }
