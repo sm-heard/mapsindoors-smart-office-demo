@@ -43,7 +43,7 @@ export default function Home() {
           <TabsList className="flex gap-2">
             <TabsTrigger value="home">Home</TabsTrigger>
             <TabsTrigger value="map">Map</TabsTrigger>
-            <TabsTrigger value="contact">Config</TabsTrigger>
+            <TabsTrigger value="contact">Reports</TabsTrigger>
           </TabsList>
           <TabsContent value="home"></TabsContent>
           <TabsContent value="map"></TabsContent>
