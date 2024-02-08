@@ -55,6 +55,18 @@ import { Label } from "@/components/ui/label";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+import { cn } from "@/lib/utils";
+
 export default function Map() {
   const mapsindoors = window.mapsindoors;
   const mapboxgl = window.mapboxgl;
@@ -79,6 +91,8 @@ export default function Map() {
 
   const highlightMap = { red: "#FF0000", blue: "#0000FF", green: "#00FF00" };
   const [highlight, setHighlight] = useState("red");
+
+  const [date, setDate] = useState<Date>();
 
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -157,12 +171,20 @@ export default function Map() {
       fitBoundsPadding: { top: 50, bottom: 50 },
     });
 
+    const liveDataManager = new mapsindoors.LiveDataManager(mapsIndoors);
+    liveDataManager.enableLiveData(
+      mapsindoors.LiveDataManager.LiveDataDomainTypes.AVAILABILITY
+    );
+    liveDataManager.enableLiveData(
+      mapsindoors.LiveDataManager.LiveDataDomainTypes.OCCUPANCY
+    );
+
     directionsServiceRef.current = directionsService;
     directionsRendererRef.current = directionsRenderer;
 
-    mapsindoors.services.SolutionsService.getUserRoles().then(userRoles => {
-      
-    });
+    mapsindoors.services.SolutionsService.getUserRoles().then(
+      (userRoles) => {}
+    );
 
     let parkingDisplayRule;
     mapsindoors.services.LocationsService.getLocation(
@@ -236,6 +258,29 @@ export default function Map() {
               >
                 Book Room
               </Button>
+              {/* booking calendar */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[280px] justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           )}
 
@@ -303,6 +348,7 @@ export default function Map() {
 
   return (
     <>
+      {/* settings */}
       <Drawer>
         <DrawerTrigger asChild>
           <Button
@@ -398,6 +444,7 @@ export default function Map() {
         </DrawerContent>
       </Drawer>
 
+      {/* user */}
       <Drawer>
         <DrawerTrigger asChild>
           <Button
@@ -414,19 +461,22 @@ export default function Map() {
         </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle className="place-self-center">{loginState.toUpperCase()}</DrawerTitle>
+            <DrawerTitle className="place-self-center">
+              {loginState.toUpperCase()}
+            </DrawerTitle>
           </DrawerHeader>
-          <DrawerFooter>
-            
-          </DrawerFooter>
+          <DrawerFooter></DrawerFooter>
         </DrawerContent>
       </Drawer>
 
+      {/* login */}
       <Dialog defaultOpen={true} onOpenChange={goToVenue}>
         {/* <DialogTrigger></DialogTrigger> */}
         <DialogContent className="justify-center items-center">
           <DialogHeader>
-            <DialogTitle className="flex justify-center items-center"><MapPinned /></DialogTitle>
+            <DialogTitle className="flex justify-center items-center">
+              <MapPinned />
+            </DialogTitle>
             {/* <DialogDescription className="flex justify-center items-center">
               Smart Office Demo
             </DialogDescription> */}
@@ -464,7 +514,11 @@ export default function Map() {
 
       <Toaster position="top-center" visibleToasts={1} />
 
-      <div ref={mapContainerRef} className="w-[97vw] mx-auto rounded-md" style={{ height: 'calc(97vh - 56px)' }} />
+      <div
+        ref={mapContainerRef}
+        className="w-[97vw] mx-auto rounded-md"
+        style={{ height: "calc(97vh - 56px)" }}
+      />
     </>
   );
 }
