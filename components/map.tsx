@@ -16,7 +16,6 @@ import {
   MapPin,
   MapPinned,
 } from "lucide-react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Drawer,
   DrawerClose,
@@ -42,7 +41,6 @@ import {
   DialogClose,
   DialogFooter,
 } from "@/components/ui/dialog";
-
 import {
   Select,
   SelectContent,
@@ -50,22 +48,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { Label } from "@/components/ui/label";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
 import { Calendar } from "@/components/ui/calendar";
 import { format, isToday, set } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
-
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
 import { cn } from "@/lib/utils";
+import smallMeetingRoomData from "@/data/smallMeetingRoom.json";
+import mediumMeetingRoomData from "@/data/mediumMeetingRoom.json";
+import workstationData from "@/data/workstation.json";
+import parkingData from "@/data/parking2433-2448.json";
 
 export default function Map() {
   const mapsindoors = window.mapsindoors;
@@ -112,6 +108,11 @@ export default function Map() {
     mapsIndoorsTransitionLevel: 19,
     showMapMarkers: undefined,
   };
+
+  let smallMeetingRoomRef = useRef({});
+  let mediumMeetingRoomRef = useRef({});
+  let workstationRef = useRef({});
+  let parkingRef = useRef({});
 
   function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -190,42 +191,24 @@ export default function Map() {
       (userRoles) => {}
     );
 
-    let parkingDisplayRule;
-    mapsindoors.services.LocationsService.getLocation(
-      "7219d41d7ebe4f26a334636a"
-    ).then((location) => {
-      parkingDisplayRule = mapsIndoors.getDisplayRule(location);
-    });
+    let smallMeetingRoomDisplayRule = smallMeetingRoomData;
+    // mapsindoors.services.LocationsService.getLocation(
+    //   "9297339ed8c0419da4264c5b"
+    // ).then((location) => {
+    //   smallMeetingRoomDisplayRule = mapsIndoors.getDisplayRule(location);
+    //   delete smallMeetingRoomDisplayRule.model3DRotationX;
+    //   delete smallMeetingRoomDisplayRule.model3DRotationY;
+    //   delete smallMeetingRoomDisplayRule.model3DRotationZ;
+    // });
 
-    let smallMeetingRoomDisplayRule;
-    mapsindoors.services.LocationsService.getLocation(
-      "9297339ed8c0419da4264c5b"
-    ).then((location) => {
-      smallMeetingRoomDisplayRule = mapsIndoors.getDisplayRule(location);
-      delete smallMeetingRoomDisplayRule.model3DRotationX;
-      delete smallMeetingRoomDisplayRule.model3DRotationY;
-      delete smallMeetingRoomDisplayRule.model3DRotationZ;
-    });
+    let mediumMeetingRoomDisplayRule = mediumMeetingRoomData;
+    let workstationDisplayRule = workstationData;
+    let parkingDisplayRule = parkingData;
 
-    let mediumMeetingRoomDisplayRule;
-    mapsindoors.services.LocationsService.getLocation(
-      "e918620e841e4c3ca91d6672"
-    ).then((location) => {
-      mediumMeetingRoomDisplayRule = mapsIndoors.getDisplayRule(location);
-      delete mediumMeetingRoomDisplayRule.model3DRotationX;
-      delete mediumMeetingRoomDisplayRule.model3DRotationY;
-      delete mediumMeetingRoomDisplayRule.model3DRotationZ;
-    });
-
-    let workstationDisplayRule;
-    mapsindoors.services.LocationsService.getLocation(
-      "a03dd7e567704711aed66d76"
-    ).then((location) => {
-      workstationDisplayRule = mapsIndoors.getDisplayRule(location);
-      delete workstationDisplayRule.model3DRotationX;
-      delete workstationDisplayRule.model3DRotationY;
-      delete workstationDisplayRule.model3DRotationZ;
-    });
+    smallMeetingRoomRef.current = smallMeetingRoomDisplayRule;
+    mediumMeetingRoomRef.current = mediumMeetingRoomDisplayRule;
+    workstationRef.current = workstationDisplayRule;
+    parkingRef.current = parkingDisplayRule;
 
     const handleClick = (location) => {
       mapsIndoors.selectLocation(location);
@@ -254,10 +237,6 @@ export default function Map() {
             <div className="flex flex-row justify-center mt-8">
               <Button
                 onClick={() => {
-                  mapsIndoors.overrideDisplayRule(
-                    location.id,
-                    smallMeetingRoomDisplayRule
-                  );
                   toast.dismiss();
                   setBookingState(true);
                 }}
@@ -271,11 +250,8 @@ export default function Map() {
             <div className="flex flex-row justify-center mt-8">
               <Button
                 onClick={() => {
-                  mapsIndoors.overrideDisplayRule(
-                    location.id,
-                    mediumMeetingRoomDisplayRule
-                  );
                   toast.dismiss();
+                  setBookingState(true);
                 }}
               >
                 Book Room
@@ -287,11 +263,8 @@ export default function Map() {
             <div className="flex flex-row justify-center mt-8">
               <Button
                 onClick={() => {
-                  mapsIndoors.overrideDisplayRule(
-                    location.id,
-                    workstationDisplayRule
-                  );
                   toast.dismiss();
+                  setBookingState(true);
                 }}
               >
                 Book Workstation
@@ -303,11 +276,8 @@ export default function Map() {
             <div className="flex flex-row justify-center mt-8">
               <Button
                 onClick={() => {
-                  mapsIndoors.overrideDisplayRule(
-                    location.id,
-                    parkingDisplayRule
-                  );
                   toast.dismiss();
+                  setBookingState(true);
                 }}
               >
                 Reserve Parking
@@ -505,10 +475,26 @@ export default function Map() {
         {/* <DialogTrigger></DialogTrigger> */}
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Book</DialogTitle>
-            <DialogDescription>
-              Book your meeting room, workstation, or parking spot.
-            </DialogDescription>
+            <DialogTitle>
+              {selectedLocation &&
+                selectedLocation.properties.type === "MeetingRoom Small" && (
+                  <span>Book Room</span>
+                )}
+              {selectedLocation &&
+                selectedLocation.properties.type === "MeetingRoom Medium" && (
+                  <span>Book Room</span>
+                )}
+              {selectedLocation &&
+                selectedLocation.properties.type === "Workstation 1.4m" && (
+                  <span>Book Workstation</span>
+                )}
+              {selectedLocation &&
+                selectedLocation.properties.type === "Parking" && (
+                  <span>Reserve Parking</span>
+                )}
+            </DialogTitle>
+            {/* <DialogDescription>
+            </DialogDescription> */}
           </DialogHeader>
           <Popover
             onOpenChange={(value) => {
@@ -548,7 +534,14 @@ export default function Map() {
           </Popover>
           <DialogFooter>
             <DialogClose asChild>
-              <Button>
+              <Button
+                onClick={() => {
+                  mapsIndoorsRef.current.overrideDisplayRule(
+                    selectedLocation.id,
+                    smallMeetingRoomRef.current
+                  );
+                }}
+              >
                 Confirm
               </Button>
             </DialogClose>
