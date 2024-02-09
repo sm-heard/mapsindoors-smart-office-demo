@@ -92,9 +92,10 @@ export default function Map() {
   const highlightMap = { red: "#FF0000", blue: "#0000FF", green: "#00FF00" };
   const [highlight, setHighlight] = useState("red");
 
-  const [dateState, setDateState] = useState<Date>(new Date(Date.now()));
+  const [dateState, setDateState] = useState<Date | undefined>(new Date());
 
   const [bookingState, setBookingState] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -504,10 +505,15 @@ export default function Map() {
           <DialogHeader>
             <DialogTitle>Book</DialogTitle>
             <DialogDescription>
-              Book your meeting room or workstation
+              Book your meeting room, workstation, or parking spot.
             </DialogDescription>
           </DialogHeader>
-          <Popover>
+          <Popover
+            onOpenChange={(value) => {
+              setCalendarOpen(value);
+            }}
+            open={calendarOpen}
+          >
             <PopoverTrigger asChild>
               <Button
                 variant={"outline"}
@@ -517,15 +523,23 @@ export default function Map() {
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateState ? format(dateState, "PPP") : <span>Pick a date</span>}
+                {dateState ? (
+                  format(dateState, "PPP")
+                ) : (
+                  <span>Pick a date</span>
+                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
               <Calendar
                 mode="single"
                 selected={dateState}
-                onSelect={setDateState}
-                disabled=
+                onSelect={(date) => {
+                  setDateState(date);
+                  setCalendarOpen(false);
+                }}
+                fromDate={new Date()}
+                required
                 initialFocus
               />
             </PopoverContent>
