@@ -538,7 +538,14 @@ export default function Map() {
                 onClick={() => {
                   mapsIndoorsRef.current.overrideDisplayRule(
                     selectedLocation.id,
-                    smallMeetingRoomRef.current
+                    selectedLocation.properties.type === "MeetingRoom Small"
+                      ? smallMeetingRoomRef.current
+                      : selectedLocation.properties.type ===
+                        "MeetingRoom Medium"
+                      ? mediumMeetingRoomRef.current
+                      : selectedLocation.properties.type === "Workstation 1.4m"
+                      ? workstationRef.current
+                      : parkingRef.current
                   );
                 }}
               >
