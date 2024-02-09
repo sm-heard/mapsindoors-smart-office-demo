@@ -211,6 +211,9 @@ export default function Map() {
     workstationRef.current = workstationDisplayRule;
     parkingRef.current = parkingDisplayRule;
 
+    // let solutionConfig = mapsIndoors.getSolutionConfig();
+    // console.log(solutionConfig);
+
     const handleClick = (location) => {
       mapsIndoors.selectLocation(location);
       setSelectedLocation(location);
