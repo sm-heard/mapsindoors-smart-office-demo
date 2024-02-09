@@ -544,6 +544,13 @@ export default function Map() {
               />
             </PopoverContent>
           </Popover>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button>
+                Confirm
+              </Button>
+            </DialogClose>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
