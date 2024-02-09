@@ -437,11 +437,20 @@ export default function Map() {
         </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle className="place-self-center">
-              Calendar
-            </DrawerTitle>
+            <DrawerTitle className="place-self-center">Calendar</DrawerTitle>
           </DrawerHeader>
-          <DrawerFooter></DrawerFooter>
+          <DrawerFooter className="mx-auto">
+            <Calendar
+              mode="single"
+              selected={dateState}
+              onSelect={(date) => {
+                setDateState(date);
+              }}
+              fromDate={new Date()}
+              required
+              initialFocus
+            />
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
 
