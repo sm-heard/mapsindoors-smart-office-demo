@@ -56,7 +56,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, isToday, set } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 import {
@@ -92,7 +92,9 @@ export default function Map() {
   const highlightMap = { red: "#FF0000", blue: "#0000FF", green: "#00FF00" };
   const [highlight, setHighlight] = useState("red");
 
-  const [date, setDate] = useState<Date>();
+  const [dateState, setDateState] = useState<Date>(new Date(Date.now()));
+
+  const [bookingState, setBookingState] = useState(false);
 
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -254,33 +256,11 @@ export default function Map() {
                     smallMeetingRoomDisplayRule
                   );
                   toast.dismiss();
+                  setBookingState(true);
                 }}
               >
                 Book Room
               </Button>
-              {/* booking calendar */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[280px] justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
             </div>
           )}
 
@@ -512,8 +492,50 @@ export default function Map() {
         </DialogContent>
       </Dialog>
 
+      {/* booking */}
+      <Dialog
+        open={bookingState}
+        onOpenChange={(value) => {
+          setBookingState(value);
+        }}
+      >
+        {/* <DialogTrigger></DialogTrigger> */}
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Book</DialogTitle>
+            <DialogDescription>
+              Book your meeting room or workstation
+            </DialogDescription>
+          </DialogHeader>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-[280px] justify-start text-left font-normal",
+                  !dateState && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateState ? format(dateState, "PPP") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={dateState}
+                onSelect={setDateState}
+                disabled=
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </DialogContent>
+      </Dialog>
+
       <Toaster position="top-center" visibleToasts={1} />
 
+      {/* map */}
       <div
         ref={mapContainerRef}
         className="w-[97vw] mx-auto rounded-md"
