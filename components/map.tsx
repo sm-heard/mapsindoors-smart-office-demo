@@ -15,6 +15,7 @@ import {
   LandPlot,
   MapPin,
   MapPinned,
+  CalendarDays,
 } from "lucide-react";
 import {
   Drawer,
@@ -416,6 +417,28 @@ export default function Map() {
           <DrawerHeader>
             <DrawerTitle className="place-self-center">
               {loginState.toUpperCase()}
+            </DrawerTitle>
+          </DrawerHeader>
+          <DrawerFooter></DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
+      {/* calendar */}
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button
+            size="icon"
+            variant="default"
+            className="absolute z-50 top-24 left-8"
+            disabled={buttonDisabledAnimation}
+          >
+            <CalendarDays />
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle className="place-self-center">
+              Calendar
             </DrawerTitle>
           </DrawerHeader>
           <DrawerFooter></DrawerFooter>
