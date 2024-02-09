@@ -96,6 +96,7 @@ export default function Map() {
 
   const [bookingState, setBookingState] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -228,6 +229,7 @@ export default function Map() {
 
     const handleClick = (location) => {
       mapsIndoors.selectLocation(location);
+      setSelectedLocation(location);
       const locationType = location.properties.type;
       toast(
         <div className="flex flex-col mx-auto">
