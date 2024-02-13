@@ -18,6 +18,7 @@ import {
   CalendarDays,
   Check,
   ChevronsUpDown,
+  Search,
 } from "lucide-react";
 import {
   Command,
@@ -684,15 +685,15 @@ export default function Map() {
           <Button
             variant="secondary"
             role="combobox"
-            className="w-[200px] justify-between absolute z-50 top-5 right-52"
+            className="w-[200px] justify-between absolute z-50 top-5 right-1/2"
           >
             {value
               ? locationsMap.find(
                   (locationName) => locationName.value === value
                 )?.label
-              : "Select location"}
+              : "Search"}
             <CommandShortcut>⌘K</CommandShortcut>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
@@ -725,16 +726,15 @@ export default function Map() {
           </Command>
         </PopoverContent>
       </Popover>
-
       {/* search switch */}
         <Image
           priority
           src={mapsIndoorsIcon}
           alt="MapsIndoors"
-          className="absolute z-50 top-5 h-[28px] w-[44.8px] right-40 my-2 mr-1"
+          className="absolute z-50 top-5 h-[28px] w-[44.8px] right-[47%] my-2 mr-1"
         />
         <Switch
-          className="absolute z-50 top-5 ml-9 right-32 my-2"
+          className="absolute z-50 top-5 ml-9 right-[45%] my-2"
           onCheckedChange={(checked) => {
             if (checked) {
               // setMapProvider("mapbox");
@@ -747,7 +747,7 @@ export default function Map() {
           priority
           src={mapboxIcon}
           alt="Mapbox"
-          className="absolute z-50 top-5 h-[28px] w-[28px] ml-[84px] right-24 my-2"
+          className="absolute z-50 top-5 h-[28px] w-[28px] ml-[84px] right-[42.8%] my-2"
         />
 
       {/* toasts */}
