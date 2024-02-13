@@ -77,8 +77,8 @@ import workstationData from "@/data/workstation.json";
 import parkingData from "@/data/parking2433-2448.json";
 
 import Image from "next/image";
-import mapboxIcon from "@/public/mapbox-svg.svg"
-import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg"
+import mapboxIcon from "@/public/mapbox-svg.svg";
+import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg";
 
 export default function Map() {
   const mapsindoors = window.mapsindoors;
@@ -684,7 +684,7 @@ export default function Map() {
           <Button
             variant="secondary"
             role="combobox"
-            className="w-[200px] justify-between absolute z-50 top-5 right-32"
+            className="w-[200px] justify-between absolute z-50 top-5 right-52"
           >
             {value
               ? locationsMap.find(
@@ -727,32 +727,30 @@ export default function Map() {
       </Popover>
 
       {/* search switch */}
-{/* <div className="absolute z-50 top-5 left-1/2">
-      <Image
-      priority
-      src={mapsIndoorsIcon}
-      alt="MapsIndoors"
-      className="h-[28px] w-[44.8px]"
-    />
-      <Switch className="ml-9" onCheckedChange={
-        (checked) => {
-          if (checked) {
-            // setMapProvider("mapbox");
-          } else {
-            // setMapProvider("google");
-          }
-        }
-      } />
-      <Image
-      priority
-      src={mapboxIcon}
-      alt="Mapbox"
-      className="h-[28px] w-[28px] ml-[84px]"
-    />
-</div> */}
+        <Image
+          priority
+          src={mapsIndoorsIcon}
+          alt="MapsIndoors"
+          className="absolute z-50 top-5 h-[28px] w-[44.8px] right-40 my-2 mr-1"
+        />
+        <Switch
+          className="absolute z-50 top-5 ml-9 right-32 my-2"
+          onCheckedChange={(checked) => {
+            if (checked) {
+              // setMapProvider("mapbox");
+            } else {
+              // setMapProvider("google");
+            }
+          }}
+        />
+        <Image
+          priority
+          src={mapboxIcon}
+          alt="Mapbox"
+          className="absolute z-50 top-5 h-[28px] w-[28px] ml-[84px] right-24 my-2"
+        />
 
       {/* toasts */}
-
       <Toaster position="top-center" visibleToasts={1} />
 
       {/* map */}
