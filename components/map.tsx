@@ -16,7 +16,18 @@ import {
   MapPin,
   MapPinned,
   CalendarDays,
+  Check,
+  ChevronsUpDown,
 } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandShortcut,
+} from "@/components/ui/command";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Drawer,
   DrawerClose,
@@ -58,11 +69,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import smallMeetingRoomData from "@/data/smallMeetingRoom.json";
 import mediumMeetingRoomData from "@/data/mediumMeetingRoom.json";
 import workstationData from "@/data/workstation.json";
 import parkingData from "@/data/parking2433-2448.json";
+
+import Image from "next/image";
+import mapboxIcon from "@/public/mapbox-svg.svg"
+import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg"
 
 export default function Map() {
   const mapsindoors = window.mapsindoors;
@@ -70,6 +86,7 @@ export default function Map() {
 
   const mapContainerRef = useRef(null);
   const mapboxMapRef = useRef(null);
+  // const mapboxMap2Ref = useRef(null);
   const mapsIndoorsRef = useRef(null);
   const directionsServiceRef = useRef(null);
   const directionsRendererRef = useRef(null);
@@ -81,19 +98,26 @@ export default function Map() {
   const [locationsList, setLocationsList] = useState([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [buttonDisabledAnimation, setButtonDisabledAnimation] = useState(true);
-  const [withRoutes, setWithRoutes] = useState(false);
 
-  const zoomLevelMap = { far: 21, medium: 22, close: 23 };
-  const [zoomLevel, setZoomLevel] = useState("far");
-
-  const highlightMap = { red: "#FF0000", blue: "#0000FF", green: "#00FF00" };
-  const [highlight, setHighlight] = useState("red");
+  // const [withRoutes, setWithRoutes] = useState(false);
+  // const zoomLevelMap = { far: 21, medium: 22, close: 23 };
+  // const [zoomLevel, setZoomLevel] = useState("far");
+  // const highlightMap = { red: "#FF0000", blue: "#0000FF", green: "#00FF00" };
+  // const [highlight, setHighlight] = useState("red");
 
   const [dateState, setDateState] = useState<Date | undefined>(new Date());
-
   const [bookingState, setBookingState] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
+
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
+  const [locations, setLocations] = useState([]);
+
+  const locationsMap = locations.map((location: string) => ({
+    value: location.toLowerCase(),
+    label: location,
+  }));
 
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -150,6 +174,7 @@ export default function Map() {
     await delay(4000);
 
     setButtonDisabledAnimation(false);
+    // mapsIndoors.setFloor("20");
   };
 
   useEffect(() => {
@@ -160,9 +185,11 @@ export default function Map() {
       mapView: mapView,
     });
     const mapboxMap = mapsIndoors.getMap();
+    // const mapboxMap2 = mapView.getMap();
 
     mapsIndoorsRef.current = mapsIndoors;
     mapboxMapRef.current = mapboxMap;
+    // mapboxMap2Ref.current = mapboxMap2;
 
     const externalDirectionsProvider =
       new mapsindoors.directions.MapboxProvider(
@@ -177,20 +204,37 @@ export default function Map() {
       fitBoundsPadding: { top: 50, bottom: 50 },
     });
 
-    const liveDataManager = new mapsindoors.LiveDataManager(mapsIndoors);
-    liveDataManager.enableLiveData(
-      mapsindoors.LiveDataManager.LiveDataDomainTypes.AVAILABILITY
-    );
-    liveDataManager.enableLiveData(
-      mapsindoors.LiveDataManager.LiveDataDomainTypes.OCCUPANCY
-    );
+    // const liveDataManager = new mapsindoors.LiveDataManager(mapsIndoors);
+    // liveDataManager.enableLiveData(
+    //   mapsindoors.LiveDataManager.LiveDataDomainTypes.AVAILABILITY
+    // );
+    // liveDataManager.enableLiveData(
+    //   mapsindoors.LiveDataManager.LiveDataDomainTypes.OCCUPANCY
+    // );
+
+    // Floor Selector
+    // const floorSelectorDiv = document.createElement("div");
+    // const floorSelector = new mapsindoors.FloorSelector(floorSelectorDiv, mapsIndoors);
+    // mapboxMap.addControl({
+    //   onAdd: function () {
+    //     return floorSelectorDiv;
+    //   },
+    //   onRemove: function () {},
+    // },"bottom-right");
+
+    // mapsIndoors.on("ready", () => {
+    //   mapsIndoors.fitVenue("e8dbfc6e2d464b69be2ef076");
+    //   // mapsIndoors.setBuilding("9b8c70311378434987562503");
+    //   // mapsIndoors.setFloor(0);
+    // }
+    // );
 
     directionsServiceRef.current = directionsService;
     directionsRendererRef.current = directionsRenderer;
 
-    mapsindoors.services.SolutionsService.getUserRoles().then(
-      (userRoles) => {}
-    );
+    // mapsindoors.services.SolutionsService.getUserRoles().then(
+    //   (userRoles) => {}
+    // );
 
     let smallMeetingRoomDisplayRule = smallMeetingRoomData;
     // mapsindoors.services.LocationsService.getLocation(
@@ -212,7 +256,9 @@ export default function Map() {
     parkingRef.current = parkingDisplayRule;
 
     // let solutionConfig = mapsIndoors.getSolutionConfig();
-    // console.log(solutionConfig);
+    // mapsindoors.services.VenuesService.getVenue("dfea941bb3694e728df92d3d").then((venue) => {
+    //   console.log("v",venue);
+    // });
 
     const handleClick = (location) => {
       mapsIndoors.selectLocation(location);
@@ -303,6 +349,28 @@ export default function Map() {
     };
   }, []);
 
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && e.metaKey) {
+        setOpen((open) => !open);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
+
+  useEffect(() => {
+    mapsindoors.services.LocationsService.getLocations({
+      floor: "0",
+      venue: "AUSTINOFFICE",
+    }).then((locations) => {
+      let locationNames = locations
+        .filter((location) => location.properties.name !== null)
+        .map((location) => location.properties.name);
+      setLocations(locationNames);
+    });
+  }, []);
+
   return (
     <>
       {/* settings */}
@@ -369,6 +437,10 @@ export default function Map() {
                     "visibility",
                     "visible"
                   );
+                  let solutionConfig =
+                    mapsIndoorsRef.current.getSolutionConfig();
+                  solutionConfig.mainDisplayRule.model2DVisible = false;
+                  mapsIndoorsRef.current.setSolutionConfig(solutionConfig);
                 } else {
                   mapboxMapRef.current.setLayoutProperty(
                     "MI_WALLS_LAYER",
@@ -385,6 +457,21 @@ export default function Map() {
                     "visibility",
                     "none"
                   );
+                  // mapboxMapRef.current.setLayoutProperty(
+                  //   "MI_POINT_LAYER",
+                  //   "visibility",
+                  //   "none"
+                  // );
+                  // mapboxMapRef.current.setLayoutProperty(
+                  //   "MI_POLYGON_LAYER",
+                  //   "visibility",
+                  //   "none"
+                  // );
+                  let solutionConfig =
+                    mapsIndoorsRef.current.getSolutionConfig();
+                  solutionConfig.mainDisplayRule.model2DVisible = true;
+                  mapsIndoorsRef.current.setSolutionConfig(solutionConfig);
+                  // mapsIndoorsRef.current.setDisplayRule("MeetingRoom Small", {wallsHeight: 3});
                 }
               }}
             >
@@ -590,6 +677,81 @@ export default function Map() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* search */}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="secondary"
+            role="combobox"
+            className="w-[200px] justify-between absolute z-50 top-5 right-32"
+          >
+            {value
+              ? locationsMap.find(
+                  (locationName) => locationName.value === value
+                )?.label
+              : "Select location"}
+            <CommandShortcut>⌘K</CommandShortcut>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0">
+          <Command>
+            <CommandInput placeholder="Search location..." />
+            <CommandEmpty>No location found.</CommandEmpty>
+            <CommandGroup>
+              <ScrollArea className="h-72">
+                {locationsMap.map((locationName) => (
+                  <CommandItem
+                    key={locationName.value}
+                    onSelect={(currentValue) => {
+                      setValue(currentValue === value ? "" : currentValue);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === locationName.value
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                    {locationName.label}
+                  </CommandItem>
+                ))}
+              </ScrollArea>
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
+
+      {/* search switch */}
+{/* <div className="absolute z-50 top-5 left-1/2">
+      <Image
+      priority
+      src={mapsIndoorsIcon}
+      alt="MapsIndoors"
+      className="h-[28px] w-[44.8px]"
+    />
+      <Switch className="ml-9" onCheckedChange={
+        (checked) => {
+          if (checked) {
+            // setMapProvider("mapbox");
+          } else {
+            // setMapProvider("google");
+          }
+        }
+      } />
+      <Image
+      priority
+      src={mapboxIcon}
+      alt="Mapbox"
+      className="h-[28px] w-[28px] ml-[84px]"
+    />
+</div> */}
+
+      {/* toasts */}
 
       <Toaster position="top-center" visibleToasts={1} />
 

@@ -15,7 +15,7 @@ export default function Home() {
     <>
       <Script
         src={
-          "https://app.mapsindoors.com/mapsindoors/js/sdk/4.29.2/mapsindoors-4.29.2.js.gz?apikey=" +
+          "https://app.mapsindoors.com/mapsindoors/js/sdk/4.29.3/mapsindoors-4.29.3.js.gz?apikey=" +
           process.env.NEXT_PUBLIC_MAPSINDOORS_API_KEY
         }
         onLoad={() => {
@@ -23,7 +23,7 @@ export default function Home() {
         }}
       />
       <Script
-        src={"https://api.mapbox.com/mapbox-gl-js/v3.1.0/mapbox-gl.js"}
+        src={"https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"}
         onLoad={() => {
           setMapboxReady(true);
         }}
