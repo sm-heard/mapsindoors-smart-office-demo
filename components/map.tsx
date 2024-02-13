@@ -685,7 +685,7 @@ export default function Map() {
           <Button
             variant="secondary"
             role="combobox"
-            className="w-[200px] justify-between absolute z-50 top-5 right-1/2"
+            className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2"
           >
             {value
               ? locationsMap.find(
@@ -731,10 +731,10 @@ export default function Map() {
           priority
           src={mapsIndoorsIcon}
           alt="MapsIndoors"
-          className="absolute z-50 top-5 h-[28px] w-[44.8px] right-[47%] my-2 mr-1"
+          className="absolute z-50 bottom-5 h-[28px] w-[44.8px] right-[47%] my-2 mr-1"
         />
         <Switch
-          className="absolute z-50 top-5 ml-9 right-[45%] my-2"
+          className="absolute z-50 bottom-5 ml-9 right-[45%] my-2"
           onCheckedChange={(checked) => {
             if (checked) {
               // setMapProvider("mapbox");
@@ -747,7 +747,7 @@ export default function Map() {
           priority
           src={mapboxIcon}
           alt="Mapbox"
-          className="absolute z-50 top-5 h-[28px] w-[28px] ml-[84px] right-[42.8%] my-2"
+          className="absolute z-50 bottom-5 h-[28px] w-[28px] ml-[84px] right-[42.8%] my-2"
         />
 
       {/* toasts */}
