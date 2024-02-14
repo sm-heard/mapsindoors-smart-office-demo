@@ -123,7 +123,6 @@ export default function Map() {
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
     element: undefined,
-    // localFontFamily: "Lato",
     center: { lat: 30.3605298, lng: -97.7421781, floor: 0 },
     zoom: 17,
     minZoom: 16,
@@ -175,10 +174,14 @@ export default function Map() {
     await delay(4000);
 
     setButtonDisabledAnimation(false);
-    // mapsIndoors.setFloor("20");
   };
 
   useEffect(() => {
+    mapsindoors.MapsIndoors.addVenuesToSync("dfea941bb3694e728df92d3d");
+    mapsindoors.MapsIndoors.setMapsIndoorsApiKey(
+      process.env.NEXT_PUBLIC_MAPSINDOORS_API_KEY
+    );
+
     mapViewOptions.element = mapContainerRef.current;
 
     const mapView = new mapsindoors.mapView.MapboxV3View(mapViewOptions);
@@ -205,6 +208,24 @@ export default function Map() {
       fitBoundsPadding: { top: 50, bottom: 50 },
     });
 
+    const myPositionControlElement = document.createElement("div");
+    const positionControl = new mapsindoors.PositionControl(
+      myPositionControlElement,
+      {
+        mapsIndoors: mapsIndoors,
+        maxAccuracy: 75,
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+      }
+    );
+    mapboxMap.addControl({
+      onAdd: function () {
+        return myPositionControlElement;
+      },
+      onRemove: function () {},
+    });
+
     // const liveDataManager = new mapsindoors.LiveDataManager(mapsIndoors);
     // liveDataManager.enableLiveData(
     //   mapsindoors.LiveDataManager.LiveDataDomainTypes.AVAILABILITY
@@ -213,15 +234,19 @@ export default function Map() {
     //   mapsindoors.LiveDataManager.LiveDataDomainTypes.OCCUPANCY
     // );
 
-    // Floor Selector
-    // const floorSelectorDiv = document.createElement("div");
-    // const floorSelector = new mapsindoors.FloorSelector(floorSelectorDiv, mapsIndoors);
-    // mapboxMap.addControl({
-    //   onAdd: function () {
-    //     return floorSelectorDiv;
-    //   },
-    //   onRemove: function () {},
-    // },"bottom-right");
+    const floorSelectorDiv = document.createElement("div");
+
+    const floorSelector = new mapsindoors.FloorSelector(
+      floorSelectorDiv,
+      mapsIndoors
+    );
+    // floorSelectorDiv.className += " rounded-lg bg-primary shadow-lg ";
+    mapboxMap.addControl({
+      onAdd: function () {
+        return floorSelectorDiv;
+      },
+      onRemove: function () {},
+    });
 
     // mapsIndoors.on("ready", () => {
     //   mapsIndoors.fitVenue("e8dbfc6e2d464b69be2ef076");
@@ -379,7 +404,7 @@ export default function Map() {
         <DrawerTrigger asChild>
           <Button
             size="icon"
-            className="absolute z-50 top-5 right-8"
+            className="absolute z-50 top-36 left-8"
             disabled={buttonDisabledAnimation}
           >
             <Settings />
@@ -685,15 +710,15 @@ export default function Map() {
           <Button
             variant="secondary"
             role="combobox"
-            className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2"
+            className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
           >
             {value
               ? locationsMap.find(
                   (locationName) => locationName.value === value
                 )?.label
-              : "Search"}
+              : "Select location"}
             <CommandShortcut>⌘K</CommandShortcut>
-            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
@@ -726,29 +751,30 @@ export default function Map() {
           </Command>
         </PopoverContent>
       </Popover>
+
       {/* search switch */}
-        <Image
-          priority
-          src={mapsIndoorsIcon}
-          alt="MapsIndoors"
-          className="absolute z-50 bottom-5 h-[28px] w-[44.8px] right-[47%] my-2 mr-1"
-        />
-        <Switch
-          className="absolute z-50 bottom-5 ml-9 right-[45%] my-2"
-          onCheckedChange={(checked) => {
-            if (checked) {
-              // setMapProvider("mapbox");
-            } else {
-              // setMapProvider("google");
-            }
-          }}
-        />
-        <Image
-          priority
-          src={mapboxIcon}
-          alt="Mapbox"
-          className="absolute z-50 bottom-5 h-[28px] w-[28px] ml-[84px] right-[42.8%] my-2"
-        />
+      {/* <Image
+        priority
+        src={mapsIndoorsIcon}
+        alt="MapsIndoors"
+        className="absolute z-50 bottom-5 h-[28px] w-[44.8px] right-[47%] my-2 mr-1"
+      />
+      <Switch
+        className="absolute z-50 bottom-5 ml-9 right-[45%] my-2"
+        onCheckedChange={(checked) => {
+          if (checked) {
+            // setMapProvider("mapbox");
+          } else {
+            // setMapProvider("google");
+          }
+        }}
+      />
+      <Image
+        priority
+        src={mapboxIcon}
+        alt="Mapbox"
+        className="absolute z-50 bottom-5 h-[28px] w-[28px] ml-[84px] right-[42.8%] my-2"
+      /> */}
 
       {/* toasts */}
       <Toaster position="top-center" visibleToasts={1} />

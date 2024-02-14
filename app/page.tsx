@@ -15,9 +15,7 @@ export default function Home() {
     <>
       <Script
         src={
-          "https://app.mapsindoors.com/mapsindoors/js/sdk/4.29.3/mapsindoors-4.29.3.js.gz?apikey=" +
-          process.env.NEXT_PUBLIC_MAPSINDOORS_API_KEY
-        }
+          "https://app.mapsindoors.com/mapsindoors/js/sdk/4.29.3/mapsindoors-4.29.3.js.gz?apikey="}
         onLoad={() => {
           setMapsindoorsReady(true);
         }}
