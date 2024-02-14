@@ -26,6 +26,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
   CommandShortcut,
 } from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -85,9 +86,13 @@ export default function Map() {
   const mapsindoors = window.mapsindoors;
   const mapboxgl = window.mapboxgl;
 
+  const smallMeetingRoomRef = useRef({});
+  const mediumMeetingRoomRef = useRef({});
+  const workstationRef = useRef({});
+  const parkingRef = useRef({});
+
   const mapContainerRef = useRef(null);
   const mapboxMapRef = useRef(null);
-  // const mapboxMap2Ref = useRef(null);
   const mapsIndoorsRef = useRef(null);
   const directionsServiceRef = useRef(null);
   const directionsRendererRef = useRef(null);
@@ -96,15 +101,8 @@ export default function Map() {
   const [dimensionState, setDimensionState] = useState("3d");
   const [loginState, setLoginState] = useState("staff");
 
-  const [locationsList, setLocationsList] = useState([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [buttonDisabledAnimation, setButtonDisabledAnimation] = useState(true);
-
-  // const [withRoutes, setWithRoutes] = useState(false);
-  // const zoomLevelMap = { far: 21, medium: 22, close: 23 };
-  // const [zoomLevel, setZoomLevel] = useState("far");
-  // const highlightMap = { red: "#FF0000", blue: "#0000FF", green: "#00FF00" };
-  // const [highlight, setHighlight] = useState("red");
 
   const [dateState, setDateState] = useState<Date | undefined>(new Date());
   const [bookingState, setBookingState] = useState(false);
@@ -114,11 +112,14 @@ export default function Map() {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [locations, setLocations] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const locationsMap = locations.map((location: string) => ({
-    value: location.toLowerCase(),
-    label: location,
-  }));
+  // const locationsMap = locations.map((location) => ({
+  //   // value: location.toLowerCase(),
+  //   value: location[1],
+  //   label: location[0],
+  // }));
 
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -133,11 +134,6 @@ export default function Map() {
     mapsIndoorsTransitionLevel: 19,
     showMapMarkers: undefined,
   };
-
-  let smallMeetingRoomRef = useRef({});
-  let mediumMeetingRoomRef = useRef({});
-  let workstationRef = useRef({});
-  let parkingRef = useRef({});
 
   function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -374,7 +370,7 @@ export default function Map() {
       mapsIndoors.off("click", handleClick);
     };
   }, []);
-
+  // open command menu
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && e.metaKey) {
@@ -384,17 +380,33 @@ export default function Map() {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
-
+  // get locations
   useEffect(() => {
-    mapsindoors.services.LocationsService.getLocations({
-      floor: "0",
-      venue: "AUSTINOFFICE",
-    }).then((locations) => {
-      let locationNames = locations
+    async function getLocations() {
+      setLoading(true);
+      const res = await mapsindoors.services.LocationsService.getLocations({
+        floor: "0",
+        venue: "AUSTINOFFICE",
+        types: [
+          "MeetingRoom Small",
+          "MeetingRoom Medium",
+          "Workstation 1.4m",
+          "Parking",
+          "Restroom",
+        ],
+        q: "",
+      });
+      const locationNames = res
         .filter((location) => location.properties.name !== null)
-        .map((location) => location.properties.name);
+        .map((location) => ({
+          value: location.id,
+          label: location.properties.name,
+        }));
       setLocations(locationNames);
-    });
+      setLoading(false);
+    }
+
+    getLocations();
   }, []);
 
   return (
@@ -404,7 +416,7 @@ export default function Map() {
         <DrawerTrigger asChild>
           <Button
             size="icon"
-            className="absolute z-50 top-36 left-8"
+            className="absolute z-50 top-24 left-8"
             disabled={buttonDisabledAnimation}
           >
             <Settings />
@@ -545,7 +557,7 @@ export default function Map() {
           <Button
             size="icon"
             variant="default"
-            className="absolute z-50 top-24 left-8"
+            className="absolute z-50 top-36 left-8"
             disabled={buttonDisabledAnimation}
           >
             <CalendarDays />
@@ -708,28 +720,31 @@ export default function Map() {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="secondary"
+            variant="outline"
             role="combobox"
+            aria-expanded={open}
             className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
           >
             {value
-              ? locationsMap.find(
-                  (locationName) => locationName.value === value
-                )?.label
+              ? locations.find((locationName) => locationName.value === value)
+                  ?.label
               : "Select location"}
             <CommandShortcut>⌘K</CommandShortcut>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
-          <Command>
+          <Command loop>
             <CommandInput placeholder="Search location..." />
+            {/* <CommandList>
+              {loading && <span>Loading...</span>} */}
             <CommandEmpty>No location found.</CommandEmpty>
             <CommandGroup>
               <ScrollArea className="h-72">
-                {locationsMap.map((locationName) => (
+                {locations.map((locationName) => (
                   <CommandItem
                     key={locationName.value}
+                    value={locationName.value}
                     onSelect={(currentValue) => {
                       setValue(currentValue === value ? "" : currentValue);
                       setOpen(false);
@@ -748,6 +763,7 @@ export default function Map() {
                 ))}
               </ScrollArea>
             </CommandGroup>
+            {/* </CommandList> */}
           </Command>
         </PopoverContent>
       </Popover>
