@@ -19,6 +19,7 @@ import {
   Check,
   ChevronsUpDown,
   Search,
+  CornerUpRight,
 } from "lucide-react";
 import {
   Command,
@@ -81,6 +82,8 @@ import parkingData from "@/data/parking2433-2448.json";
 import Image from "next/image";
 import mapboxIcon from "@/public/mapbox-svg.svg";
 import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg";
+import { Label } from "./ui/label";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function Map() {
   const mapsindoors = window.mapsindoors;
@@ -96,6 +99,9 @@ export default function Map() {
   const mapsIndoorsRef = useRef(null);
   const directionsServiceRef = useRef(null);
   const directionsRendererRef = useRef(null);
+  const positionRef = useRef({
+    coords: { latitude: 30.3605081, longitude: -97.7421388 },
+  });
 
   const [lightPresetState, setLightPresetState] = useState("dawn");
   const [dimensionState, setDimensionState] = useState("3d");
@@ -115,12 +121,6 @@ export default function Map() {
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // const locationsMap = locations.map((location) => ({
-  //   // value: location.toLowerCase(),
-  //   value: location[1],
-  //   label: location[0],
-  // }));
-
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
     element: undefined,
@@ -139,6 +139,101 @@ export default function Map() {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  const initBlueDot = () => {
+    const map = mapboxMapRef.current;
+    const size = 100;
+
+    // This implements `StyleImageInterface`
+    // to draw a pulsing dot icon on the map.
+    const pulsingDot = {
+      width: size,
+      height: size,
+      data: new Uint8Array(size * size * 4),
+
+      // When the layer is added to the map,
+      // get the rendering context for the map canvas.
+      onAdd: function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = this.width;
+        canvas.height = this.height;
+        this.context = canvas.getContext("2d");
+      },
+
+      // Call once before every frame where the icon will be used.
+      render: function () {
+        const duration = 1000;
+        const t = (performance.now() % duration) / duration;
+
+        const radius = (size / 2) * 0.3;
+        const outerRadius = (size / 2) * 0.7 * t + radius;
+        const context = this.context;
+
+        // Draw the outer circle.
+        context.clearRect(0, 0, this.width, this.height);
+        context.beginPath();
+        context.arc(
+          this.width / 2,
+          this.height / 2,
+          outerRadius,
+          0,
+          Math.PI * 2
+        );
+        context.fillStyle = `rgba(48, 113, 217, ${1 - t})`;
+        context.fill();
+
+        // Draw the inner circle.
+        context.beginPath();
+        context.arc(this.width / 2, this.height / 2, radius, 0, Math.PI * 2);
+        context.fillStyle = "rgba(48, 113, 217, 1)";
+        context.strokeStyle = "white";
+        context.lineWidth = 2 + 4 * (1 - t);
+        context.fill();
+        context.stroke();
+
+        // Update this image's data with data from the canvas.
+        this.data = context.getImageData(0, 0, this.width, this.height).data;
+
+        // Continuously repaint the map, resulting
+        // in the smooth animation of the dot.
+        map.triggerRepaint();
+
+        // Return `true` to let the map know that the image was updated.
+        return true;
+      },
+    };
+
+    map.on("load", () => {
+      map.addImage("pulsing-dot", pulsingDot, { pixelRatio: 2 });
+
+      map.addSource("dot-point", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: [
+                  positionRef.current.coords.longitude,
+                  positionRef.current.coords.latitude,
+                ], // icon position [lng, lat]
+              },
+            },
+          ],
+        },
+      });
+      map.addLayer({
+        id: "layer-with-pulsing-dot",
+        type: "symbol",
+        source: "dot-point",
+        layout: {
+          "icon-image": "pulsing-dot",
+        },
+      });
+    });
+  };
+
   const goToVenue = async () => {
     const mapboxMap = mapboxMapRef.current;
     const mapsIndoors = mapsIndoorsRef.current;
@@ -147,6 +242,7 @@ export default function Map() {
       duration: 9000,
       icon: <Building />,
       className: "justify-center",
+      closeButton: false,
     });
 
     mapboxMap.flyTo({
@@ -185,11 +281,9 @@ export default function Map() {
       mapView: mapView,
     });
     const mapboxMap = mapsIndoors.getMap();
-    // const mapboxMap2 = mapView.getMap();
 
     mapsIndoorsRef.current = mapsIndoors;
     mapboxMapRef.current = mapboxMap;
-    // mapboxMap2Ref.current = mapboxMap2;
 
     const externalDirectionsProvider =
       new mapsindoors.directions.MapboxProvider(
@@ -205,16 +299,27 @@ export default function Map() {
     });
 
     const myPositionControlElement = document.createElement("div");
-    const positionControl = new mapsindoors.PositionControl(
-      myPositionControlElement,
-      {
-        mapsIndoors: mapsIndoors,
-        maxAccuracy: 75,
-        positionOptions: {
-          enableHighAccuracy: true,
-        },
-      }
-    );
+    // const positionControl = new mapsindoors.PositionControl(
+    //   myPositionControlElement,
+    //   {
+    //     mapsIndoors: mapsIndoors,
+    //     maxAccuracy: 75,
+    //     positionOptions: {
+    //       enableHighAccuracy: true,
+    //     },
+    //     positionMarkerStyles: {
+    //       radius: "10px",
+    //       strokeWidth: "2px",
+    //       strokeColor: "hsl(0, 0%, 100%)",
+    //       fillColor: "hsl(217, 69%, 52%)",
+    //       fillOpacity: 1,
+    //     },
+    //     accuracyCircleStyles: {
+    //       fillColor: "hsl(217, 69%, 52%)",
+    //       fillOpacity: 0,
+    //     },
+    //   }
+    // );
     mapboxMap.addControl({
       onAdd: function () {
         return myPositionControlElement;
@@ -222,34 +327,25 @@ export default function Map() {
       onRemove: function () {},
     });
 
-    // const liveDataManager = new mapsindoors.LiveDataManager(mapsIndoors);
-    // liveDataManager.enableLiveData(
-    //   mapsindoors.LiveDataManager.LiveDataDomainTypes.AVAILABILITY
-    // );
-    // liveDataManager.enableLiveData(
-    //   mapsindoors.LiveDataManager.LiveDataDomainTypes.OCCUPANCY
-    // );
+    // positionControl.on("position_received", () => {
+    //   positionRef.current = positionControl.currentPosition;
+    // });
+
+    // positionRef.current = {
+    //   coords: { latitude: 30.3605081, longitude: -97.7421388 },
+    // };
 
     const floorSelectorDiv = document.createElement("div");
-
     const floorSelector = new mapsindoors.FloorSelector(
       floorSelectorDiv,
       mapsIndoors
     );
-    // floorSelectorDiv.className += " rounded-lg bg-primary shadow-lg ";
     mapboxMap.addControl({
       onAdd: function () {
         return floorSelectorDiv;
       },
       onRemove: function () {},
     });
-
-    // mapsIndoors.on("ready", () => {
-    //   mapsIndoors.fitVenue("e8dbfc6e2d464b69be2ef076");
-    //   // mapsIndoors.setBuilding("9b8c70311378434987562503");
-    //   // mapsIndoors.setFloor(0);
-    // }
-    // );
 
     directionsServiceRef.current = directionsService;
     directionsRendererRef.current = directionsRenderer;
@@ -259,15 +355,6 @@ export default function Map() {
     // );
 
     let smallMeetingRoomDisplayRule = smallMeetingRoomData;
-    // mapsindoors.services.LocationsService.getLocation(
-    //   "9297339ed8c0419da4264c5b"
-    // ).then((location) => {
-    //   smallMeetingRoomDisplayRule = mapsIndoors.getDisplayRule(location);
-    //   delete smallMeetingRoomDisplayRule.model3DRotationX;
-    //   delete smallMeetingRoomDisplayRule.model3DRotationY;
-    //   delete smallMeetingRoomDisplayRule.model3DRotationZ;
-    // });
-
     let mediumMeetingRoomDisplayRule = mediumMeetingRoomData;
     let workstationDisplayRule = workstationData;
     let parkingDisplayRule = parkingData;
@@ -276,11 +363,6 @@ export default function Map() {
     mediumMeetingRoomRef.current = mediumMeetingRoomDisplayRule;
     workstationRef.current = workstationDisplayRule;
     parkingRef.current = parkingDisplayRule;
-
-    // let solutionConfig = mapsIndoors.getSolutionConfig();
-    // mapsindoors.services.VenuesService.getVenue("dfea941bb3694e728df92d3d").then((venue) => {
-    //   console.log("v",venue);
-    // });
 
     const handleClick = (location) => {
       mapsIndoors.selectLocation(location);
@@ -356,10 +438,50 @@ export default function Map() {
               </Button>
             </div>
           )}
+          <div className="flex flex-row justify-end mt-4 mr-2">
+            <Button
+              variant="outline"
+              size="icon"
+              id="directionsButton"
+              className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
+              onClick={() => {
+                toast.dismiss();
+                const originCoords = {
+                  lat: positionRef.current.coords.latitude,
+                  lng: positionRef.current.coords.longitude,
+                  // floor: 0,
+                };
+                const destCoords = {
+                  lat: location.properties.anchor.coordinates[1],
+                  lng: location.properties.anchor.coordinates[0],
+                  floor: location.properties.floor,
+                };
+
+                directionsService
+                  .getRoute({
+                    origin: originCoords,
+                    destination: destCoords,
+                    travelMode: "DRIVING",
+                  })
+                  .then((directionsResult) => {
+                    directionsRenderer.setRoute(directionsResult);
+                  });
+              }}
+            >
+              <CornerUpRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <span className="flex flex-row justify-end mt-1 text-xs text-muted-foreground">
+            Directions
+          </span>
         </div>,
         {
           duration: 10000,
           position: "top-center",
+          cancel: {
+            label: "Close",
+            onClick: () => console.log("Cancel!"),
+          },
         }
       );
     };
@@ -407,6 +529,10 @@ export default function Map() {
     }
 
     getLocations();
+  }, []);
+  // init bluedot
+  useEffect(() => {
+    initBlueDot();
   }, []);
 
   return (
@@ -728,9 +854,9 @@ export default function Map() {
             {value
               ? locations.find((locationName) => locationName.value === value)
                   ?.label
-              : "Select location"}
+              : "Search"}
             <CommandShortcut>⌘K</CommandShortcut>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
