@@ -114,6 +114,7 @@ export default function Map() {
   const [bookingState, setBookingState] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [floorState, setFloorState] = useState(null);
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
@@ -234,6 +235,18 @@ export default function Map() {
     });
   };
 
+// Function to remove the pulsing dot
+const removeBlueDot = () => {
+  const map = mapboxMapRef.current;
+  if (map.getLayer('layer-with-pulsing-dot')) {
+    map.removeLayer('layer-with-pulsing-dot');
+  }
+  if (map.getSource('dot-point')) {
+    map.removeSource('dot-point');
+  }
+};
+
+
   const goToVenue = async () => {
     const mapboxMap = mapboxMapRef.current;
     const mapsIndoors = mapsIndoorsRef.current;
@@ -298,7 +311,13 @@ export default function Map() {
       fitBoundsPadding: { top: 50, bottom: 50 },
     });
 
-    const myPositionControlElement = document.createElement("div");
+    mapsIndoors.on("floor_changed", (floor) => {
+      directionsRenderer.setRoute(null);
+      setFloorState(floor);
+    }
+    );
+
+    // const myPositionControlElement = document.createElement("div");
     // const positionControl = new mapsindoors.PositionControl(
     //   myPositionControlElement,
     //   {
@@ -320,17 +339,15 @@ export default function Map() {
     //     },
     //   }
     // );
-    mapboxMap.addControl({
-      onAdd: function () {
-        return myPositionControlElement;
-      },
-      onRemove: function () {},
-    });
-
+    // mapboxMap.addControl({
+    //   onAdd: function () {
+    //     return myPositionControlElement;
+    //   },
+    //   onRemove: function () {},
+    // });
     // positionControl.on("position_received", () => {
     //   positionRef.current = positionControl.currentPosition;
     // });
-
     // positionRef.current = {
     //   coords: { latitude: 30.3605081, longitude: -97.7421388 },
     // };
@@ -532,7 +549,11 @@ export default function Map() {
   }, []);
   // init bluedot
   useEffect(() => {
-    initBlueDot();
+    // if (floorState === 10) {
+        initBlueDot();
+    // } else {
+    //   removeBlueDot();
+    // }
   }, []);
 
   return (
