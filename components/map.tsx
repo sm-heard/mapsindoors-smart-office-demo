@@ -114,7 +114,7 @@ export default function Map() {
   const [bookingState, setBookingState] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [floorState, setFloorState] = useState(null);
+  const [floorState, setFloorState] = useState(0);
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
@@ -160,6 +160,11 @@ export default function Map() {
         this.context = canvas.getContext("2d");
       },
 
+      // onRemove: function () {
+      //   this.canvas.parentNode.removeChild(this.canvas);
+      //   map.off("render", this.render);
+      // },
+
       // Call once before every frame where the icon will be used.
       render: function () {
         const duration = 1000;
@@ -175,7 +180,7 @@ export default function Map() {
         context.arc(
           this.width / 2,
           this.height / 2,
-          outerRadius,
+          outerRadius / 2,
           0,
           Math.PI * 2
         );
@@ -227,6 +232,7 @@ export default function Map() {
       map.addLayer({
         id: "layer-with-pulsing-dot",
         type: "symbol",
+        slot: "top",
         source: "dot-point",
         layout: {
           "icon-image": "pulsing-dot",
@@ -234,18 +240,6 @@ export default function Map() {
       });
     });
   };
-
-// Function to remove the pulsing dot
-const removeBlueDot = () => {
-  const map = mapboxMapRef.current;
-  if (map.getLayer('layer-with-pulsing-dot')) {
-    map.removeLayer('layer-with-pulsing-dot');
-  }
-  if (map.getSource('dot-point')) {
-    map.removeSource('dot-point');
-  }
-};
-
 
   const goToVenue = async () => {
     const mapboxMap = mapboxMapRef.current;
@@ -314,8 +308,7 @@ const removeBlueDot = () => {
     mapsIndoors.on("floor_changed", (floor) => {
       directionsRenderer.setRoute(null);
       setFloorState(floor);
-    }
-    );
+    });
 
     // const myPositionControlElement = document.createElement("div");
     // const positionControl = new mapsindoors.PositionControl(
@@ -549,12 +542,22 @@ const removeBlueDot = () => {
   }, []);
   // init bluedot
   useEffect(() => {
-    // if (floorState === 10) {
-        initBlueDot();
-    // } else {
-    //   removeBlueDot();
-    // }
+    initBlueDot();
   }, []);
+  // update bluedot
+  useEffect(() => {
+    const map = mapboxMapRef.current;
+    map.on('render', () => {
+      if (!map.getLayer('layer-with-pulsing-dot')) {
+        return;
+        }
+    if (floorState > 10) {
+      map.setPaintProperty("layer-with-pulsing-dot", "icon-opacity", 0);
+    } else {
+      map.setPaintProperty("layer-with-pulsing-dot", "icon-opacity", 1);
+    }
+  });
+  }, [floorState]);
 
   return (
     <>
@@ -712,7 +715,9 @@ const removeBlueDot = () => {
         </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle className="place-self-center">Calendar</DrawerTitle>
+            <DrawerTitle className="place-self-center">
+              See Availability
+            </DrawerTitle>
           </DrawerHeader>
           <DrawerFooter className="mx-auto">
             <Calendar
