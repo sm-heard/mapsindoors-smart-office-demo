@@ -908,7 +908,7 @@ function retrieveIDsForDate(date) {
               {loading && <span>Loading...</span>} */}
             <CommandEmpty>No location found.</CommandEmpty>
             <CommandGroup>
-              <ScrollArea className="h-72">
+              <ScrollArea className="h-40">
                 {locations.map((locationName) => (
                   <CommandItem
                     key={locationName.value}
