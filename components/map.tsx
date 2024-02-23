@@ -83,7 +83,6 @@ import Image from "next/image";
 import mapboxIcon from "@/public/mapbox-svg.svg";
 import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg";
 import { Label } from "./ui/label";
-import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function Map() {
   const mapsindoors = window.mapsindoors;
@@ -115,12 +114,21 @@ export default function Map() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [floorState, setFloorState] = useState(0);
+  const [dateToIdsMap, setDateToIdsMap] = useState({});
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [locations, setLocations] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function saveIDsForDate(date, ids) {
+    setDateToIdsMap((prev) => ({ ...prev, [date]: ids }));
+}
+
+function retrieveIDsForDate(date) {
+  return dateToIdsMap[date] || [];
+}
 
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -356,6 +364,8 @@ export default function Map() {
       },
       onRemove: function () {},
     });
+    floorSelectorDiv.style.marginTop = "192px";
+    // floorSelectorDiv.style.marginRight = "2rem";
 
     directionsServiceRef.current = directionsService;
     directionsRendererRef.current = directionsRenderer;
@@ -566,7 +576,7 @@ export default function Map() {
         <DrawerTrigger asChild>
           <Button
             size="icon"
-            className="absolute z-50 top-24 left-8"
+            className="absolute z-50 top-32 right-8"
             disabled={buttonDisabledAnimation}
           >
             <Settings />
@@ -682,7 +692,7 @@ export default function Map() {
           <Button
             size="icon"
             variant="secondary"
-            className="absolute z-50 top-5 left-8"
+            className="absolute z-50 top-5 right-8"
             disabled={buttonDisabledAnimation}
           >
             <Avatar className="p-1">
@@ -707,7 +717,7 @@ export default function Map() {
           <Button
             size="icon"
             variant="default"
-            className="absolute z-50 top-36 left-8"
+            className="absolute z-50 top-20 right-8"
             disabled={buttonDisabledAnimation}
           >
             <CalendarDays />
@@ -848,6 +858,10 @@ export default function Map() {
             <DialogClose asChild>
               <Button
                 onClick={() => {
+                  const currentDate = format(dateState, "P");
+                  saveIDsForDate(currentDate, selectedLocation.id);
+                  console.log(currentDate);
+                  console.log(retrieveIDsForDate(currentDate));
                   mapsIndoorsRef.current.overrideDisplayRule(
                     selectedLocation.id,
                     selectedLocation.properties.type === "MeetingRoom Small"
@@ -859,6 +873,7 @@ export default function Map() {
                       ? workstationRef.current
                       : parkingRef.current
                   );
+                  
                 }}
               >
                 Confirm
@@ -875,7 +890,8 @@ export default function Map() {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
+            className="w-[200px] justify-between absolute z-50 top-5 left-8"
+            // className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
           >
             {value
               ? locations.find((locationName) => locationName.value === value)
