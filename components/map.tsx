@@ -21,6 +21,7 @@ import {
   Search,
   CornerUpRight,
   Wind,
+  PersonStanding,
 } from "lucide-react";
 import {
   Command,
@@ -75,6 +76,8 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { Toggle } from "@/components/ui/toggle"
+
 import smallMeetingRoomData from "@/data/smallMeetingRoom.json";
 import mediumMeetingRoomData from "@/data/mediumMeetingRoom.json";
 import workstationData from "@/data/workstation.json";
@@ -120,6 +123,7 @@ export default function Map() {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [locations, setLocations] = useState([]);
+  const [restroomsList, setRestroomsList] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -560,6 +564,11 @@ export default function Map() {
           value: location.id,
           label: location.properties.name,
         }));
+      const restrooms = res.filter(
+        (location) => location.properties.type === "Restroom"
+      ).map((location) => location.id);
+      setRestroomsList(restrooms);
+
       setLocations(locationNames);
       setLoading(false);
     }
@@ -966,6 +975,19 @@ export default function Map() {
           </Command>
         </PopoverContent>
       </Popover>
+
+      {/* Highlight Locations */}
+      <Toggle variant="outline" aria-label="Highlight all restrooms" className="absolute z-50 top-5 left-64" disabled={buttonDisabledAnimation} onPressedChange={
+        (checked) => {
+          if (checked) {
+            mapsIndoorsRef.current.highlight(restroomsList);
+          } else {
+            mapsIndoorsRef.current.highlight([]);
+          }
+        }
+      }>
+      <PersonStanding className="" />
+    </Toggle>
 
       {/* search switch */}
       {/* <Image
