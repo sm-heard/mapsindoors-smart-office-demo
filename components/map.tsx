@@ -122,13 +122,27 @@ export default function Map() {
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function saveIDsForDate(date, ids) {
-    setDateToIdsMap((prev) => ({ ...prev, [date]: ids }));
-}
+  function saveIDsForDate(newId) {
+    const currentDate = format(dateState, "yyyy-MM-dd");
+    // Ensure newIds is always an array for consistency
+    const idsToAdd = Array.isArray(newId) ? newId : [newId];
 
-function retrieveIDsForDate(date) {
-  return dateToIdsMap[date] || [];
-}
+    setDateToIdsMap((prev) => {
+      const currentIdsForDate = prev[currentDate] || [];
+      // Combine the current IDs with the new ones, avoiding duplicates
+      const updatedIdsForDate = [
+        ...new Set([...currentIdsForDate, ...idsToAdd]),
+      ];
+      // Return the updated associations, including the newly added IDs for the current date
+      return { ...prev, [currentDate]: updatedIdsForDate };
+    });
+  }
+
+  function retrieveIDsForDate(date) {
+    // if (dateState !== date) return [];
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    return dateToIdsMap[formattedDate] || [];
+  }
 
   const mapViewOptions = {
     accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -557,16 +571,16 @@ function retrieveIDsForDate(date) {
   // update bluedot
   useEffect(() => {
     const map = mapboxMapRef.current;
-    map.on('render', () => {
-      if (!map.getLayer('layer-with-pulsing-dot')) {
+    map.on("render", () => {
+      if (!map.getLayer("layer-with-pulsing-dot")) {
         return;
-        }
-    if (floorState > 10) {
-      map.setPaintProperty("layer-with-pulsing-dot", "icon-opacity", 0);
-    } else {
-      map.setPaintProperty("layer-with-pulsing-dot", "icon-opacity", 1);
-    }
-  });
+      }
+      if (floorState > 10) {
+        map.setPaintProperty("layer-with-pulsing-dot", "icon-opacity", 0);
+      } else {
+        map.setPaintProperty("layer-with-pulsing-dot", "icon-opacity", 1);
+      }
+    });
   }, [floorState]);
 
   return (
@@ -734,7 +748,26 @@ function retrieveIDsForDate(date) {
               mode="single"
               selected={dateState}
               onSelect={(date) => {
+                mapsIndoorsRef.current.revertDisplayRule(retrieveIDsForDate(dateState));
+                mapsIndoorsRef.current.deselectLocation();
                 setDateState(date);
+                const ids = retrieveIDsForDate(date);
+                for(const id of ids) {
+                  mapsindoors.services.LocationsService.getLocation(id).then(location => {
+
+                  mapsIndoorsRef.current.overrideDisplayRule(
+                    id,
+                    location.properties.type === "MeetingRoom Small"
+                      ? smallMeetingRoomRef.current
+                      : location.properties.type ===
+                        "MeetingRoom Medium"
+                      ? mediumMeetingRoomRef.current
+                      : location.properties.type === "Workstation 1.4m"
+                      ? workstationRef.current
+                      : parkingRef.current
+                  );
+                });
+                }
               }}
               fromDate={new Date()}
               required
@@ -858,10 +891,7 @@ function retrieveIDsForDate(date) {
             <DialogClose asChild>
               <Button
                 onClick={() => {
-                  const currentDate = format(dateState, "P");
-                  saveIDsForDate(currentDate, selectedLocation.id);
-                  console.log(currentDate);
-                  console.log(retrieveIDsForDate(currentDate));
+                  saveIDsForDate(selectedLocation.id);
                   mapsIndoorsRef.current.overrideDisplayRule(
                     selectedLocation.id,
                     selectedLocation.properties.type === "MeetingRoom Small"
@@ -873,7 +903,6 @@ function retrieveIDsForDate(date) {
                       ? workstationRef.current
                       : parkingRef.current
                   );
-                  
                 }}
               >
                 Confirm
