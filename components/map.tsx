@@ -20,6 +20,7 @@ import {
   ChevronsUpDown,
   Search,
   CornerUpRight,
+  Wind,
 } from "lucide-react";
 import {
   Command,
@@ -409,16 +410,17 @@ export default function Map() {
             {location.properties.name}
           </div>
           <div className="space-x-4">
-            <Badge variant="secondary" className="">
-              <User className="mr-2" />4
+            <Badge variant="secondary" className="bg-[#4ADE80] hover:bg-[#4ADE90]">
+              <User className="mr-2" />&#x2714;
             </Badge>
             <Badge variant="secondary" className="">
               <Thermometer className="mr-2" />
-              21°C
+              {Math.floor(Math.random() * (24 - 21 + 1)) + 21}°C
             </Badge>
-            <Badge variant="secondary" className="">
-              <LandPlot className="mr-2" />
-              22 m²
+            <Badge variant="destructive" className="">
+              <Wind className="mr-2" />
+              {/* 22 m² */}
+              {Math.floor(Math.random() * (1850 - 450 + 1)) + 450} PPM
             </Badge>
           </div>
           {locationType === "MeetingRoom Small" && (
