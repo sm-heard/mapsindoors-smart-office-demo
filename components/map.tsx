@@ -977,7 +977,7 @@ export default function Map() {
       </Popover>
 
       {/* Highlight Locations */}
-      <Toggle variant="outline" aria-label="Highlight all restrooms" className="absolute z-50 top-5 left-64" disabled={buttonDisabledAnimation} onPressedChange={
+      <Toggle variant="outline" aria-label="Highlight all restrooms" className="absolute z-50 top-5 left-64 bg-secondary" disabled={buttonDisabledAnimation} onPressedChange={
         (checked) => {
           if (checked) {
             mapsIndoorsRef.current.highlight(restroomsList);
