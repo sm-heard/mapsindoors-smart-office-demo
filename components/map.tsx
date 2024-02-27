@@ -26,6 +26,7 @@ import {
 import { FaRestroom } from "react-icons/fa";
 import { MdPeopleAlt } from "react-icons/md";
 import { PiForkKnifeFill } from "react-icons/pi";
+import { MdCo2 } from "react-icons/md";
 
 import {
   Command,
@@ -433,7 +434,7 @@ export default function Map() {
               {Math.floor(Math.random() * (24 - 21 + 1)) + 21}°C
             </Badge>
             <Badge variant="destructive" className="">
-              <Wind className="mr-2" />
+              <MdCo2 className="h-6 w-6 mr-2" />
               {/* 22 m² */}
               {Math.floor(Math.random() * (1850 - 450 + 1)) + 450} PPM
             </Badge>
