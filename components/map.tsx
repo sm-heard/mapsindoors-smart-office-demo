@@ -1074,7 +1074,7 @@ export default function Map() {
               <CornerUpRight className="h-4 w-4" />
             </Button>
             <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
-            Near
+            Nearby
           </span>
             </TooltipContent>
           </Tooltip>
@@ -1122,7 +1122,7 @@ export default function Map() {
               <CornerUpRight className="h-4 w-4" />
             </Button>
             <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
-            Near
+            Nearby
           </span>
             </TooltipContent>
           </Tooltip>
@@ -1170,7 +1170,7 @@ export default function Map() {
               <CornerUpRight className="h-4 w-4" />
             </Button>
             <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
-            Near
+            Nearby
           </span>
             </TooltipContent>
           </Tooltip>
