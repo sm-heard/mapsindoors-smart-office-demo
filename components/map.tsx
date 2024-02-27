@@ -21,8 +21,12 @@ import {
   Search,
   CornerUpRight,
   Wind,
-  PersonStanding,
+  Utensils,
 } from "lucide-react";
+import { FaRestroom } from "react-icons/fa";
+import { MdPeopleAlt } from "react-icons/md";
+import { PiForkKnifeFill } from "react-icons/pi";
+
 import {
   Command,
   CommandEmpty,
@@ -76,7 +80,8 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { Toggle } from "@/components/ui/toggle"
+import { Toggle } from "@/components/ui/toggle";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 import smallMeetingRoomData from "@/data/smallMeetingRoom.json";
 import mediumMeetingRoomData from "@/data/mediumMeetingRoom.json";
@@ -124,6 +129,8 @@ export default function Map() {
   const [value, setValue] = useState("");
   const [locations, setLocations] = useState([]);
   const [restroomsList, setRestroomsList] = useState([]);
+  const [meetingroomsList, setMeetingroomsList] = useState([]);
+  const [canteensList, setCanteensList] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -145,7 +152,7 @@ export default function Map() {
 
   function retrieveIDsForDate(date) {
     // if (dateState !== date) return [];
-    const formattedDate = format(date, 'yyyy-MM-dd');
+    const formattedDate = format(date, "yyyy-MM-dd");
     return dateToIdsMap[formattedDate] || [];
   }
 
@@ -414,8 +421,12 @@ export default function Map() {
             {location.properties.name}
           </div>
           <div className="space-x-4">
-            <Badge variant="secondary" className="bg-[#4ADE80] hover:bg-[#4ADE90]">
-              <User className="mr-2" />&#x2714;
+            <Badge
+              variant="secondary"
+              className="bg-[#4ADE80] hover:bg-[#4ADE90]"
+            >
+              <User className="mr-2" />
+              &#x2714;
             </Badge>
             <Badge variant="secondary" className="">
               <Thermometer className="mr-2" />
@@ -555,6 +566,7 @@ export default function Map() {
           "Workstation 1.4m",
           "Parking",
           "Restroom",
+          "Canteen",
         ],
         q: "",
       });
@@ -564,10 +576,22 @@ export default function Map() {
           value: location.id,
           label: location.properties.name,
         }));
-      const restrooms = res.filter(
-        (location) => location.properties.type === "Restroom"
-      ).map((location) => location.id);
+      const restrooms = res
+        .filter((location) => location.properties.type === "Restroom")
+        .map((location) => location.id);
       setRestroomsList(restrooms);
+      const meetingrooms = res
+        .filter(
+          (location) =>
+            location.properties.type === "MeetingRoom Small" ||
+            location.properties.type === "MeetingRoom Medium"
+        )
+        .map((location) => location.id);
+      setMeetingroomsList(meetingrooms);
+      const canteens = res
+        .filter((location) => location.properties.type === "Canteen")
+        .map((location) => location.id);
+      setCanteensList(canteens);
 
       setLocations(locationNames);
       setLoading(false);
@@ -593,6 +617,12 @@ export default function Map() {
       }
     });
   }, [floorState]);
+  // get appConfig
+  // useEffect(() => {
+  //   mapsindoors.services.AppConfigService.getConfig().then(config => {
+  //     console.log(config);
+  //   });
+  // }, []);
 
   return (
     <>
@@ -639,7 +669,8 @@ export default function Map() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-            <Tabs
+            {/* 2D to 3D */}
+            {/* <Tabs
               value={dimensionState}
               className="place-self-center mt-5"
               onValueChange={(value) => {
@@ -706,7 +737,7 @@ export default function Map() {
                   <Box className="" />
                 </TabsTrigger>
               </TabsList>
-            </Tabs>
+            </Tabs> */}
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
@@ -759,25 +790,27 @@ export default function Map() {
               mode="single"
               selected={dateState}
               onSelect={(date) => {
-                mapsIndoorsRef.current.revertDisplayRule(retrieveIDsForDate(dateState));
+                mapsIndoorsRef.current.revertDisplayRule(
+                  retrieveIDsForDate(dateState)
+                );
                 mapsIndoorsRef.current.deselectLocation();
                 setDateState(date);
                 const ids = retrieveIDsForDate(date);
-                for(const id of ids) {
-                  mapsindoors.services.LocationsService.getLocation(id).then(location => {
-
-                  mapsIndoorsRef.current.overrideDisplayRule(
-                    id,
-                    location.properties.type === "MeetingRoom Small"
-                      ? smallMeetingRoomRef.current
-                      : location.properties.type ===
-                        "MeetingRoom Medium"
-                      ? mediumMeetingRoomRef.current
-                      : location.properties.type === "Workstation 1.4m"
-                      ? workstationRef.current
-                      : parkingRef.current
+                for (const id of ids) {
+                  mapsindoors.services.LocationsService.getLocation(id).then(
+                    (location) => {
+                      mapsIndoorsRef.current.overrideDisplayRule(
+                        id,
+                        location.properties.type === "MeetingRoom Small"
+                          ? smallMeetingRoomRef.current
+                          : location.properties.type === "MeetingRoom Medium"
+                          ? mediumMeetingRoomRef.current
+                          : location.properties.type === "Workstation 1.4m"
+                          ? workstationRef.current
+                          : parkingRef.current
+                      );
+                    }
                   );
-                });
                 }
               }}
               fromDate={new Date()}
@@ -977,17 +1010,61 @@ export default function Map() {
       </Popover>
 
       {/* Highlight Locations */}
-      <Toggle variant="outline" aria-label="Highlight all restrooms" className="absolute z-50 top-5 left-64 bg-secondary" disabled={buttonDisabledAnimation} onPressedChange={
-        (checked) => {
+      {/* <Toggle
+        variant="outline"
+        aria-label="Highlight all restrooms"
+        className="absolute z-50 top-5 left-64 bg-card"
+        disabled={buttonDisabledAnimation}
+        onPressedChange={(checked) => {
           if (checked) {
             mapsIndoorsRef.current.highlight(restroomsList);
           } else {
             mapsIndoorsRef.current.highlight([]);
           }
-        }
-      }>
-      <PersonStanding className="" />
-    </Toggle>
+        }}
+      >
+        <PersonStanding className="" />
+      </Toggle> */}
+
+      <ToggleGroup
+        variant="outline"
+        type="single"
+        className="absolute z-50 top-5 left-64"
+        disabled={buttonDisabledAnimation}
+        onValueChange={(value) => {
+          if (value === "restroom") {
+            mapsIndoorsRef.current.highlight(restroomsList);
+          } else if (value === "meetingroom") {
+            mapsIndoorsRef.current.highlight(meetingroomsList);
+          } else if (value === "canteen") {
+            mapsIndoorsRef.current.highlight(canteensList);
+          } else {
+            mapsIndoorsRef.current.highlight([]);
+          }
+        }}
+      >
+        <ToggleGroupItem
+          value="restroom"
+          aria-label="Toggle restroom"
+          className="bg-card"
+        >
+          <FaRestroom />
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="meetingroom"
+          aria-label="Toggle meeting room"
+          className="bg-card"
+        >
+          <MdPeopleAlt />
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="canteen"
+          aria-label="Toggle canteen"
+          className="bg-card"
+        >
+          <PiForkKnifeFill />
+        </ToggleGroupItem>
+      </ToggleGroup>
 
       {/* search switch */}
       {/* <Image
