@@ -109,7 +109,7 @@ export default function Map() {
   const directionsServiceRef = useRef(null);
   const directionsRendererRef = useRef(null);
   const positionRef = useRef({
-    coords: { latitude: 30.3605081, longitude: -97.7421388 },
+    coords: { latitude: 30.3605000, longitude: -97.7421388 },
   });
 
   const [lightPresetState, setLightPresetState] = useState("dawn");
@@ -310,6 +310,144 @@ export default function Map() {
     setButtonDisabledAnimation(false);
   };
 
+  const handleClick = (location) => {
+    mapsIndoorsRef.current.selectLocation(location);
+    setSelectedLocation(location);
+    const locationType = location.properties.type;
+    const destCoords = {
+      lat: location.properties.anchor.coordinates[1],
+      lng: location.properties.anchor.coordinates[0],
+    };
+    mapboxMapRef.current.flyTo({
+      center: [destCoords.lng, destCoords.lat],
+      // zoom: 21,
+      // pitch: mapViewOptions.pitch,
+      bearing: mapboxMapRef.current.getBearing() + 90,
+      duration: 3500,
+    });
+    toast(
+      <div className="flex flex-col mx-auto">
+        <div className="flex flex-row justify-center mb-2 font-extrabold text-lg">
+          <MapPin className="mx-2" />
+          {location.properties.name}
+        </div>
+        <div className="space-x-4">
+          <Badge
+            variant="secondary"
+            className="bg-[#4ADE80] hover:bg-[#4ADE90]"
+          >
+            <User className="mr-2" />
+            &#x2714;
+          </Badge>
+          <Badge variant="secondary" className="">
+            <Thermometer className="mr-2" />
+            {Math.floor(Math.random() * (24 - 21 + 1)) + 21}°C
+          </Badge>
+          <Badge variant="destructive" className="">
+            <MdCo2 className="h-6 w-6 mr-2" />
+            {/* 22 m² */}
+            {Math.floor(Math.random() * (1850 - 450 + 1)) + 450} PPM
+          </Badge>
+        </div>
+        {locationType === "MeetingRoom Small" && (
+          <div className="flex flex-row justify-center mt-8">
+            <Button
+              onClick={() => {
+                toast.dismiss();
+                setBookingState(true);
+              }}
+            >
+              Book Room
+            </Button>
+          </div>
+        )}
+
+        {locationType === "MeetingRoom Medium" && (
+          <div className="flex flex-row justify-center mt-8">
+            <Button
+              onClick={() => {
+                toast.dismiss();
+                setBookingState(true);
+              }}
+            >
+              Book Room
+            </Button>
+          </div>
+        )}
+
+        {locationType === "Workstation 1.4m" && (
+          <div className="flex flex-row justify-center mt-8">
+            <Button
+              onClick={() => {
+                toast.dismiss();
+                setBookingState(true);
+              }}
+            >
+              Book Workstation
+            </Button>
+          </div>
+        )}
+
+        {locationType === "Parking" && (
+          <div className="flex flex-row justify-center mt-8">
+            <Button
+              onClick={() => {
+                toast.dismiss();
+                setBookingState(true);
+              }}
+            >
+              Reserve Parking
+            </Button>
+          </div>
+        )}
+        <div className="flex flex-row justify-end mt-4 mr-2">
+          <Button
+            variant="outline"
+            size="icon"
+            id="directionsButton"
+            className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
+            onClick={() => {
+              toast.dismiss();
+              const originCoords = {
+                lat: positionRef.current.coords.latitude,
+                lng: positionRef.current.coords.longitude,
+                // floor: 0,
+              };
+              const destCoords = {
+                lat: location.properties.anchor.coordinates[1],
+                lng: location.properties.anchor.coordinates[0],
+                floor: location.properties.floor,
+              };
+
+              directionsServiceRef.current
+                .getRoute({
+                  origin: originCoords,
+                  destination: destCoords,
+                  travelMode: "DRIVING",
+                })
+                .then((directionsResult) => {
+                  directionsRendererRef.current.setRoute(directionsResult);
+                });
+            }}
+          >
+            <CornerUpRight className="h-4 w-4" />
+          </Button>
+        </div>
+        <span className="flex flex-row justify-end mt-1 text-xs text-muted-foreground">
+          Directions
+        </span>
+      </div>,
+      {
+        duration: 10000,
+        position: "top-center",
+        cancel: {
+          label: "Close",
+          onClick: () => console.log("Cancel!"),
+        },
+      }
+    );
+  };
+
   useEffect(() => {
     mapsindoors.MapsIndoors.addVenuesToSync("dfea941bb3694e728df92d3d");
     mapsindoors.MapsIndoors.setMapsIndoorsApiKey(
@@ -411,133 +549,6 @@ export default function Map() {
     workstationRef.current = workstationDisplayRule;
     parkingRef.current = parkingDisplayRule;
 
-    const handleClick = (location) => {
-      mapsIndoors.selectLocation(location);
-      setSelectedLocation(location);
-      const locationType = location.properties.type;
-      toast(
-        <div className="flex flex-col mx-auto">
-          <div className="flex flex-row justify-center mb-2 font-extrabold text-lg">
-            <MapPin className="mx-2" />
-            {location.properties.name}
-          </div>
-          <div className="space-x-4">
-            <Badge
-              variant="secondary"
-              className="bg-[#4ADE80] hover:bg-[#4ADE90]"
-            >
-              <User className="mr-2" />
-              &#x2714;
-            </Badge>
-            <Badge variant="secondary" className="">
-              <Thermometer className="mr-2" />
-              {Math.floor(Math.random() * (24 - 21 + 1)) + 21}°C
-            </Badge>
-            <Badge variant="destructive" className="">
-              <MdCo2 className="h-6 w-6 mr-2" />
-              {/* 22 m² */}
-              {Math.floor(Math.random() * (1850 - 450 + 1)) + 450} PPM
-            </Badge>
-          </div>
-          {locationType === "MeetingRoom Small" && (
-            <div className="flex flex-row justify-center mt-8">
-              <Button
-                onClick={() => {
-                  toast.dismiss();
-                  setBookingState(true);
-                }}
-              >
-                Book Room
-              </Button>
-            </div>
-          )}
-
-          {locationType === "MeetingRoom Medium" && (
-            <div className="flex flex-row justify-center mt-8">
-              <Button
-                onClick={() => {
-                  toast.dismiss();
-                  setBookingState(true);
-                }}
-              >
-                Book Room
-              </Button>
-            </div>
-          )}
-
-          {locationType === "Workstation 1.4m" && (
-            <div className="flex flex-row justify-center mt-8">
-              <Button
-                onClick={() => {
-                  toast.dismiss();
-                  setBookingState(true);
-                }}
-              >
-                Book Workstation
-              </Button>
-            </div>
-          )}
-
-          {locationType === "Parking" && (
-            <div className="flex flex-row justify-center mt-8">
-              <Button
-                onClick={() => {
-                  toast.dismiss();
-                  setBookingState(true);
-                }}
-              >
-                Reserve Parking
-              </Button>
-            </div>
-          )}
-          <div className="flex flex-row justify-end mt-4 mr-2">
-            <Button
-              variant="outline"
-              size="icon"
-              id="directionsButton"
-              className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
-              onClick={() => {
-                toast.dismiss();
-                const originCoords = {
-                  lat: positionRef.current.coords.latitude,
-                  lng: positionRef.current.coords.longitude,
-                  // floor: 0,
-                };
-                const destCoords = {
-                  lat: location.properties.anchor.coordinates[1],
-                  lng: location.properties.anchor.coordinates[0],
-                  floor: location.properties.floor,
-                };
-
-                directionsService
-                  .getRoute({
-                    origin: originCoords,
-                    destination: destCoords,
-                    travelMode: "DRIVING",
-                  })
-                  .then((directionsResult) => {
-                    directionsRenderer.setRoute(directionsResult);
-                  });
-              }}
-            >
-              <CornerUpRight className="h-4 w-4" />
-            </Button>
-          </div>
-          <span className="flex flex-row justify-end mt-1 text-xs text-muted-foreground">
-            Directions
-          </span>
-        </div>,
-        {
-          duration: 10000,
-          position: "top-center",
-          cancel: {
-            label: "Close",
-            onClick: () => console.log("Cancel!"),
-          },
-        }
-      );
-    };
-
     mapsIndoors.on("click", handleClick);
 
     return () => {
@@ -574,8 +585,9 @@ export default function Map() {
       const locationNames = res
         .filter((location) => location.properties.name !== null)
         .map((location) => ({
-          value: location.id,
+          value: location.properties.name.toLowerCase() + location.id,
           label: location.properties.name,
+          locationid: location.id,
         }));
       const restrooms = res
         .filter((location) => location.properties.type === "Restroom")
@@ -595,6 +607,7 @@ export default function Map() {
       setCanteensList(canteens);
 
       setLocations(locationNames);
+      console.log(locationNames);
       setLoading(false);
     }
 
@@ -962,6 +975,7 @@ export default function Map() {
         <PopoverTrigger asChild>
           <Button
             variant="outline"
+            disabled={buttonDisabledAnimation}
             role="combobox"
             aria-expanded={open}
             className="w-[200px] justify-between absolute z-50 top-5 left-8"
@@ -988,6 +1002,22 @@ export default function Map() {
                     key={locationName.value}
                     value={locationName.value}
                     onSelect={(currentValue) => {
+                      mapsindoors.services.LocationsService.getLocation(locationName.locationid).then(
+                        (location) => {
+                          // const destCoords = {
+                          //   lat: location.properties.anchor.coordinates[1],
+                          //   lng: location.properties.anchor.coordinates[0],
+                          // };
+                          // mapboxMapRef.current.flyTo({
+                          //   center: [destCoords.lng, destCoords.lat],
+                          //   zoom: 21,
+                          //   pitch: mapViewOptions.pitch,
+                          //   bearing: mapboxMapRef.current.getBearing() + 90,
+                          //   duration: 3500,
+                          // });
+                          handleClick(location);
+                        }
+                      );
                       setValue(currentValue === value ? "" : currentValue);
                       setOpen(false);
                     }}
