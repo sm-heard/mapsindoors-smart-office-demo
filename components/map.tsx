@@ -93,7 +93,6 @@ import Image from "next/image";
 import mapboxIcon from "@/public/mapbox-svg.svg";
 import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg";
 
-
 export default function Map() {
   const mapsindoors = window.mapsindoors;
   const mapboxgl = window.mapboxgl;
@@ -109,7 +108,7 @@ export default function Map() {
   const directionsServiceRef = useRef(null);
   const directionsRendererRef = useRef(null);
   const positionRef = useRef({
-    coords: { latitude: 30.3605000, longitude: -97.7421388 },
+    coords: { latitude: 30.3605, longitude: -97.7421388 },
   });
 
   const [lightPresetState, setLightPresetState] = useState("dawn");
@@ -314,17 +313,7 @@ export default function Map() {
     mapsIndoorsRef.current.selectLocation(location);
     setSelectedLocation(location);
     const locationType = location.properties.type;
-    const destCoords = {
-      lat: location.properties.anchor.coordinates[1],
-      lng: location.properties.anchor.coordinates[0],
-    };
-    mapboxMapRef.current.flyTo({
-      center: [destCoords.lng, destCoords.lat],
-      // zoom: 21,
-      // pitch: mapViewOptions.pitch,
-      bearing: mapboxMapRef.current.getBearing() + 90,
-      duration: 3500,
-    });
+
     toast(
       <div className="flex flex-col mx-auto">
         <div className="flex flex-row justify-center mb-2 font-extrabold text-lg">
@@ -549,7 +538,20 @@ export default function Map() {
     workstationRef.current = workstationDisplayRule;
     parkingRef.current = parkingDisplayRule;
 
-    mapsIndoors.on("click", handleClick);
+    mapsIndoors.on("click", (location) => {
+      const destCoords = {
+        lat: location.properties.anchor.coordinates[1],
+        lng: location.properties.anchor.coordinates[0],
+      };
+      mapboxMapRef.current.flyTo({
+        center: [destCoords.lng, destCoords.lat],
+        zoom: 21,
+        pitch: mapViewOptions.pitch,
+        // bearing: mapboxMapRef.current.getBearing() + 90,
+        duration: 1500,
+      });
+      handleClick(location);
+    });
 
     return () => {
       mapsIndoors.off("click", handleClick);
@@ -1002,22 +1004,22 @@ export default function Map() {
                     key={locationName.value}
                     value={locationName.value}
                     onSelect={(currentValue) => {
-                      mapsindoors.services.LocationsService.getLocation(locationName.locationid).then(
-                        (location) => {
-                          // const destCoords = {
-                          //   lat: location.properties.anchor.coordinates[1],
-                          //   lng: location.properties.anchor.coordinates[0],
-                          // };
-                          // mapboxMapRef.current.flyTo({
-                          //   center: [destCoords.lng, destCoords.lat],
-                          //   zoom: 21,
-                          //   pitch: mapViewOptions.pitch,
-                          //   bearing: mapboxMapRef.current.getBearing() + 90,
-                          //   duration: 3500,
-                          // });
-                          handleClick(location);
-                        }
-                      );
+                      mapsindoors.services.LocationsService.getLocation(
+                        locationName.locationid
+                      ).then((location) => {
+                        const destCoords = {
+                          lat: location.properties.anchor.coordinates[1],
+                          lng: location.properties.anchor.coordinates[0],
+                        };
+                        mapboxMapRef.current.flyTo({
+                          center: [destCoords.lng, destCoords.lat],
+                          zoom: 21,
+                          pitch: mapViewOptions.pitch,
+                          bearing: mapboxMapRef.current.getBearing() + 90,
+                          duration: 3500,
+                        });
+                        handleClick(location);
+                      });
                       setValue(currentValue === value ? "" : currentValue);
                       setOpen(false);
                     }}
@@ -1072,136 +1074,136 @@ export default function Map() {
               </ToggleGroupItem>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-            <Button
-              variant="outline"
-              size="icon"
-              id="directionsButton"
-              className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
-              onClick={() => {
-                toast.dismiss();
-                const originCoords = {
-                  lat: positionRef.current.coords.latitude,
-                  lng: positionRef.current.coords.longitude,
-                  // floor: 0,
-                };
-                const destCoords = {
-                  lat: 30.3606261,
-                  lng: -97.7420631,
-                  floor: 0,
-                };
+              <Button
+                variant="outline"
+                size="icon"
+                id="directionsButton"
+                className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
+                onClick={() => {
+                  toast.dismiss();
+                  const originCoords = {
+                    lat: positionRef.current.coords.latitude,
+                    lng: positionRef.current.coords.longitude,
+                    // floor: 0,
+                  };
+                  const destCoords = {
+                    lat: 30.3606261,
+                    lng: -97.7420631,
+                    floor: 0,
+                  };
 
-                directionsServiceRef.current
-                  .getRoute({
-                    origin: originCoords,
-                    destination: destCoords,
-                    travelMode: "DRIVING",
-                  })
-                  .then((directionsResult) => {
-                    directionsRendererRef.current.setRoute(directionsResult);
-                  });
-              }}
-            >
-              <CornerUpRight className="h-4 w-4" />
-            </Button>
-            <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
-            Nearby
-          </span>
+                  directionsServiceRef.current
+                    .getRoute({
+                      origin: originCoords,
+                      destination: destCoords,
+                      travelMode: "DRIVING",
+                    })
+                    .then((directionsResult) => {
+                      directionsRendererRef.current.setRoute(directionsResult);
+                    });
+                }}
+              >
+                <CornerUpRight className="h-4 w-4" />
+              </Button>
+              <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
+                Nearby
+              </span>
             </TooltipContent>
           </Tooltip>
 
           <Tooltip>
             <TooltipTrigger>
-          <ToggleGroupItem
-            value="meetingroom"
-            aria-label="Toggle meeting room"
-            className="bg-card"
-          >
-            <MdPeopleAlt />
-          </ToggleGroupItem>
-          </TooltipTrigger>
+              <ToggleGroupItem
+                value="meetingroom"
+                aria-label="Toggle meeting room"
+                className="bg-card"
+              >
+                <MdPeopleAlt />
+              </ToggleGroupItem>
+            </TooltipTrigger>
             <TooltipContent side="bottom">
-            <Button
-              variant="outline"
-              size="icon"
-              id="directionsButton"
-              className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
-              onClick={() => {
-                toast.dismiss();
-                const originCoords = {
-                  lat: positionRef.current.coords.latitude,
-                  lng: positionRef.current.coords.longitude,
-                  // floor: 0,
-                };
-                const destCoords = {
-                  lat: 30.3605378,
-                  lng: -97.7421196,
-                  floor: 0,
-                };
+              <Button
+                variant="outline"
+                size="icon"
+                id="directionsButton"
+                className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
+                onClick={() => {
+                  toast.dismiss();
+                  const originCoords = {
+                    lat: positionRef.current.coords.latitude,
+                    lng: positionRef.current.coords.longitude,
+                    // floor: 0,
+                  };
+                  const destCoords = {
+                    lat: 30.3605378,
+                    lng: -97.7421196,
+                    floor: 0,
+                  };
 
-                directionsServiceRef.current
-                  .getRoute({
-                    origin: originCoords,
-                    destination: destCoords,
-                    travelMode: "DRIVING",
-                  })
-                  .then((directionsResult) => {
-                    directionsRendererRef.current.setRoute(directionsResult);
-                  });
-              }}
-            >
-              <CornerUpRight className="h-4 w-4" />
-            </Button>
-            <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
-            Nearby
-          </span>
+                  directionsServiceRef.current
+                    .getRoute({
+                      origin: originCoords,
+                      destination: destCoords,
+                      travelMode: "DRIVING",
+                    })
+                    .then((directionsResult) => {
+                      directionsRendererRef.current.setRoute(directionsResult);
+                    });
+                }}
+              >
+                <CornerUpRight className="h-4 w-4" />
+              </Button>
+              <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
+                Nearby
+              </span>
             </TooltipContent>
           </Tooltip>
 
           <Tooltip>
             <TooltipTrigger>
-          <ToggleGroupItem
-            value="canteen"
-            aria-label="Toggle canteen"
-            className="bg-card"
-          >
-            <PiForkKnifeFill />
-          </ToggleGroupItem>
-          </TooltipTrigger>
+              <ToggleGroupItem
+                value="canteen"
+                aria-label="Toggle canteen"
+                className="bg-card"
+              >
+                <PiForkKnifeFill />
+              </ToggleGroupItem>
+            </TooltipTrigger>
             <TooltipContent side="bottom">
-            <Button
-              variant="outline"
-              size="icon"
-              id="directionsButton"
-              className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
-              onClick={() => {
-                toast.dismiss();
-                const originCoords = {
-                  lat: positionRef.current.coords.latitude,
-                  lng: positionRef.current.coords.longitude,
-                  // floor: 0,
-                };
-                const destCoords = {
-                  lat: 30.3606577,
-                  lng: -97.7421094,
-                  floor: 0,
-                };
+              <Button
+                variant="outline"
+                size="icon"
+                id="directionsButton"
+                className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
+                onClick={() => {
+                  toast.dismiss();
+                  const originCoords = {
+                    lat: positionRef.current.coords.latitude,
+                    lng: positionRef.current.coords.longitude,
+                    // floor: 0,
+                  };
+                  const destCoords = {
+                    lat: 30.3606577,
+                    lng: -97.7421094,
+                    floor: 0,
+                  };
 
-                directionsServiceRef.current
-                  .getRoute({
-                    origin: originCoords,
-                    destination: destCoords,
-                    travelMode: "DRIVING",
-                  })
-                  .then((directionsResult) => {
-                    directionsRendererRef.current.setRoute(directionsResult);
-                  });
-              }}
-            >
-              <CornerUpRight className="h-4 w-4" />
-            </Button>
-            <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
-            Nearby
-          </span>
+                  directionsServiceRef.current
+                    .getRoute({
+                      origin: originCoords,
+                      destination: destCoords,
+                      travelMode: "DRIVING",
+                    })
+                    .then((directionsResult) => {
+                      directionsRendererRef.current.setRoute(directionsResult);
+                    });
+                }}
+              >
+                <CornerUpRight className="h-4 w-4" />
+              </Button>
+              <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
+                Nearby
+              </span>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
