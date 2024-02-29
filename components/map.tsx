@@ -1244,7 +1244,7 @@ export default function Map() {
       <div
         ref={mapContainerRef}
         className="w-[97vw] mx-auto rounded-md"
-        style={{ height: "calc(97vh - 56px)" }}
+        style={{ height: "calc(97svh - 56px)" }}
       />
     </>
   );
