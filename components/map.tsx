@@ -464,7 +464,7 @@ export default function Map() {
     const directionsRenderer = new mapsindoors.directions.DirectionsRenderer({
       mapsIndoors: mapsIndoors,
       fitBounds: true,
-      fitBoundsPadding: { top: 50, bottom: 50 },
+      fitBoundsPadding: { top: 50, bottom: 50, left: 50, right: 50 },
     });
 
     mapsIndoors.on("floor_changed", (floor) => {
@@ -1004,6 +1004,7 @@ export default function Map() {
                     key={locationName.value}
                     value={locationName.value}
                     onSelect={(currentValue) => {
+                      directionsRendererRef.current.setRoute(null);
                       mapsindoors.services.LocationsService.getLocation(
                         locationName.locationid
                       ).then((location) => {
