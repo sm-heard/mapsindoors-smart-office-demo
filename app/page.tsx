@@ -27,7 +27,7 @@ export default function Home() {
         }}
       />
 
-      <div className="relative h-screen bg-primary">
+      <div className="relative h-svh bg-primary">
       <header className="flex items-center px-6 py-2 text-white">
         <Building2 className="mr-2" />
         <span className="text-lg font-semibold">DigiSpaces</span>

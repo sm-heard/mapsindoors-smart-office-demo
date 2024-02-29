@@ -326,7 +326,9 @@ export default function Map() {
             className="bg-[#4ADE80] hover:bg-[#4ADE90]"
           >
             <User className="mr-2" />
-            &#x2714;
+            {locationType === "Workstation 1.4m" && <>&#x2714;</>}
+            {locationType === "MeetingRoom Small" && <>0/4</>}
+            {locationType === "MeetingRoom Medium" && <>0/6</>}
           </Badge>
           <Badge variant="secondary" className="">
             <Thermometer className="mr-2" />
@@ -1047,7 +1049,8 @@ export default function Map() {
       <ToggleGroup
         variant="outline"
         type="single"
-        className="absolute z-50 top-5 left-64"
+        // className="absolute z-50 top-5 left-64"
+        className="absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
         disabled={buttonDisabledAnimation}
         onValueChange={(value) => {
           toast.dismiss();
@@ -1074,7 +1077,7 @@ export default function Map() {
                 <FaRestroom />
               </ToggleGroupItem>
             </TooltipTrigger>
-            <TooltipContent side="bottom">
+            <TooltipContent side="top">
               <Button
                 variant="outline"
                 size="icon"
@@ -1122,7 +1125,7 @@ export default function Map() {
                 <MdPeopleAlt />
               </ToggleGroupItem>
             </TooltipTrigger>
-            <TooltipContent side="bottom">
+            <TooltipContent side="top">
               <Button
                 variant="outline"
                 size="icon"
@@ -1170,7 +1173,7 @@ export default function Map() {
                 <PiForkKnifeFill />
               </ToggleGroupItem>
             </TooltipTrigger>
-            <TooltipContent side="bottom">
+            <TooltipContent side="top">
               <Button
                 variant="outline"
                 size="icon"
