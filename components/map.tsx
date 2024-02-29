@@ -345,7 +345,6 @@ export default function Map() {
     mapsIndoorsRef.current.selectLocation(location);
     setSelectedLocation(location);
     setDestState(location);
-    setIsBlueDotDirection(true);
     const locationType = location.properties.type;
 
     toast(
@@ -434,26 +433,6 @@ export default function Map() {
             onClick={() => {
               toast.dismiss();
               setDirectionsState(true);
-              // const originCoords = {
-              //   lat: positionRef.current.coords.latitude,
-              //   lng: positionRef.current.coords.longitude,
-              //   // floor: 0,
-              // };
-              // const destCoords = {
-              //   lat: location.properties.anchor.coordinates[1],
-              //   lng: location.properties.anchor.coordinates[0],
-              //   floor: location.properties.floor,
-              // };
-
-              // directionsServiceRef.current
-              //   .getRoute({
-              //     origin: originCoords,
-              //     destination: destCoords,
-              //     travelMode: "DRIVING",
-              //   })
-              //   .then((directionsResult) => {
-              //     directionsRendererRef.current.setRoute(directionsResult);
-              //   });
             }}
           >
             <CornerUpRight className="h-4 w-4" />
@@ -513,72 +492,6 @@ export default function Map() {
       .then((directionsResult) => {
         directionsRendererRef.current.setRoute(directionsResult);
       });
-  };
-
-  const locationSearchComboBox = (disabled: boolean, isOrigin: boolean) => {
-    return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            disabled={disabled}
-            role="combobox"
-            aria-expanded={open}
-            className="w-[200px] justify-between"
-            // className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
-          >
-            {value
-              ? locations.find((locationName) => locationName.value === value)
-                  ?.label
-              : "Search"}
-            {/* <CommandShortcut>⌘K</CommandShortcut> */}
-            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          <Command loop>
-            <CommandInput placeholder="Search location..." />
-            {/* <CommandList>
-              {loading && <span>Loading...</span>} */}
-            <CommandEmpty>No location found.</CommandEmpty>
-            <CommandGroup>
-              <ScrollArea className="h-40">
-                {locations.map((locationName) => (
-                  <CommandItem
-                    key={locationName.value}
-                    value={locationName.value}
-                    onSelect={(currentValue) => {
-                      mapsindoors.services.LocationsService.getLocation(
-                        locationName.locationid
-                      ).then((location) => {
-                        if (isOrigin) {
-                          setOriginState(getLocationCoords(location));
-                        } else {
-                          setDestState(getLocationCoords(location));
-                        }
-                      });
-                      setValue(currentValue === value ? "" : currentValue);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === locationName.value
-                          ? "opacity-100"
-                          : "opacity-0"
-                      )}
-                    />
-                    {locationName.label}
-                  </CommandItem>
-                ))}
-              </ScrollArea>
-            </CommandGroup>
-            {/* </CommandList> */}
-          </Command>
-        </PopoverContent>
-      </Popover>
-    );
   };
 
   useEffect(() => {
@@ -1171,7 +1084,7 @@ export default function Map() {
                             ).then((location) => {
                               setOriginState(location);
                             });
-                            setValue(
+                            setOriginValue(
                               currentValue === originValue ? "" : currentValue
                             );
                             setOriginOpen(false);
@@ -1302,6 +1215,7 @@ export default function Map() {
             <DialogClose asChild>
               <Button
                 type="button"
+                disabled={!originState && !isBlueDotDirection}
                 onClick={() => {
                   setDirectionsState(false);
                   handleDirections(originState, destState);
@@ -1476,7 +1390,7 @@ export default function Map() {
                   const originCoords = {
                     lat: positionRef.current.coords.latitude,
                     lng: positionRef.current.coords.longitude,
-                    // floor: 0,
+                    floor: 0,
                   };
                   const destCoords = {
                     lat: 30.3605378,
