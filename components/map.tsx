@@ -18,6 +18,7 @@ import {
   Check,
   Search,
   CornerUpRight,
+  MoveDown,
 } from "lucide-react";
 import { FaRestroom } from "react-icons/fa";
 import { MdPeopleAlt } from "react-icons/md";
@@ -83,6 +84,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import smallMeetingRoomData from "@/data/smallMeetingRoom.json";
 import mediumMeetingRoomData from "@/data/mediumMeetingRoom.json";
@@ -92,6 +104,8 @@ import parkingData from "@/data/parking2433-2448.json";
 import Image from "next/image";
 import mapboxIcon from "@/public/mapbox-svg.svg";
 import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg";
+import blueDotIcon from "@/public/bluedot.svg";
+import { Switch } from "./ui/switch";
 
 export default function Map() {
   const mapsindoors = window.mapsindoors;
@@ -108,7 +122,7 @@ export default function Map() {
   const directionsServiceRef = useRef(null);
   const directionsRendererRef = useRef(null);
   const positionRef = useRef({
-    coords: { latitude: 30.3605, longitude: -97.7421388 },
+    coords: { latitude: 30.3605, longitude: -97.7421388, floor: 0 },
   });
 
   const [lightPresetState, setLightPresetState] = useState("dawn");
@@ -127,12 +141,22 @@ export default function Map() {
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const [originOpen, setOriginOpen] = useState(false);
+  const [destOpen, setDestOpen] = useState(false);
+  const [originValue, setOriginValue] = useState("");
+  const [destValue, setDestValue] = useState("");
+  const [originState, setOriginState] = useState(null);
+  const [destState, setDestState] = useState(null);
+
   const [locations, setLocations] = useState([]);
   const [restroomsList, setRestroomsList] = useState([]);
   const [meetingroomsList, setMeetingroomsList] = useState([]);
   const [canteensList, setCanteensList] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
+  const [directionsState, setDirectionsState] = useState(false);
+  const [isBlueDotDirection, setIsBlueDotDirection] = useState(true);
+  const [isBlueDotDirection2, setIsBlueDotDirection2] = useState(false);
 
   function saveIDsForDate(newId) {
     const currentDate = format(dateState, "yyyy-MM-dd");
@@ -172,6 +196,14 @@ export default function Map() {
 
   function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function getLocationCoords(location) {
+    return {
+      lat: location.properties.anchor.coordinates[1],
+      lng: location.properties.anchor.coordinates[0],
+      floor: location.properties.floor,
+    };
   }
 
   const initBlueDot = () => {
@@ -312,6 +344,8 @@ export default function Map() {
   const handleClick = (location) => {
     mapsIndoorsRef.current.selectLocation(location);
     setSelectedLocation(location);
+    setDestState(location);
+    setIsBlueDotDirection(true);
     const locationType = location.properties.type;
 
     toast(
@@ -399,26 +433,27 @@ export default function Map() {
             className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
             onClick={() => {
               toast.dismiss();
-              const originCoords = {
-                lat: positionRef.current.coords.latitude,
-                lng: positionRef.current.coords.longitude,
-                // floor: 0,
-              };
-              const destCoords = {
-                lat: location.properties.anchor.coordinates[1],
-                lng: location.properties.anchor.coordinates[0],
-                floor: location.properties.floor,
-              };
+              setDirectionsState(true);
+              // const originCoords = {
+              //   lat: positionRef.current.coords.latitude,
+              //   lng: positionRef.current.coords.longitude,
+              //   // floor: 0,
+              // };
+              // const destCoords = {
+              //   lat: location.properties.anchor.coordinates[1],
+              //   lng: location.properties.anchor.coordinates[0],
+              //   floor: location.properties.floor,
+              // };
 
-              directionsServiceRef.current
-                .getRoute({
-                  origin: originCoords,
-                  destination: destCoords,
-                  travelMode: "DRIVING",
-                })
-                .then((directionsResult) => {
-                  directionsRendererRef.current.setRoute(directionsResult);
-                });
+              // directionsServiceRef.current
+              //   .getRoute({
+              //     origin: originCoords,
+              //     destination: destCoords,
+              //     travelMode: "DRIVING",
+              //   })
+              //   .then((directionsResult) => {
+              //     directionsRendererRef.current.setRoute(directionsResult);
+              //   });
             }}
           >
             <CornerUpRight className="h-4 w-4" />
@@ -431,11 +466,118 @@ export default function Map() {
       {
         duration: 10000,
         position: "top-center",
-        cancel: {
+        action: {
           label: "Close",
           onClick: () => console.log("Cancel!"),
         },
       }
+    );
+  };
+
+  const handleDirections = (origin, destination) => {
+    let originCoords;
+    let destCoords;
+    if (isBlueDotDirection) {
+      originCoords = {
+        lat: positionRef.current.coords.latitude,
+        lng: positionRef.current.coords.longitude,
+        floor: 0,
+      };
+    } else {
+      originCoords = {
+        lat: origin.properties.anchor.coordinates[1],
+        lng: origin.properties.anchor.coordinates[0],
+        floor: origin.properties.floor,
+      };
+    }
+    if (isBlueDotDirection2) {
+      destCoords = {
+        lat: positionRef.current.coords.latitude,
+        lng: positionRef.current.coords.longitude,
+        floor: 0,
+      };
+    } else {
+      destCoords = {
+        lat: destination.properties.anchor.coordinates[1],
+        lng: destination.properties.anchor.coordinates[0],
+        floor: destination.properties.floor,
+      };
+    }
+
+    directionsServiceRef.current
+      .getRoute({
+        origin: originCoords,
+        destination: destCoords,
+        travelMode: "DRIVING",
+      })
+      .then((directionsResult) => {
+        directionsRendererRef.current.setRoute(directionsResult);
+      });
+  };
+
+  const locationSearchComboBox = (disabled: boolean, isOrigin: boolean) => {
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            disabled={disabled}
+            role="combobox"
+            aria-expanded={open}
+            className="w-[200px] justify-between"
+            // className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
+          >
+            {value
+              ? locations.find((locationName) => locationName.value === value)
+                  ?.label
+              : "Search"}
+            {/* <CommandShortcut>⌘K</CommandShortcut> */}
+            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0">
+          <Command loop>
+            <CommandInput placeholder="Search location..." />
+            {/* <CommandList>
+              {loading && <span>Loading...</span>} */}
+            <CommandEmpty>No location found.</CommandEmpty>
+            <CommandGroup>
+              <ScrollArea className="h-40">
+                {locations.map((locationName) => (
+                  <CommandItem
+                    key={locationName.value}
+                    value={locationName.value}
+                    onSelect={(currentValue) => {
+                      mapsindoors.services.LocationsService.getLocation(
+                        locationName.locationid
+                      ).then((location) => {
+                        if (isOrigin) {
+                          setOriginState(getLocationCoords(location));
+                        } else {
+                          setDestState(getLocationCoords(location));
+                        }
+                      });
+                      setValue(currentValue === value ? "" : currentValue);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === locationName.value
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                    {locationName.label}
+                  </CommandItem>
+                ))}
+              </ScrollArea>
+            </CommandGroup>
+            {/* </CommandList> */}
+          </Command>
+        </PopoverContent>
+      </Popover>
     );
   };
 
@@ -974,6 +1116,204 @@ export default function Map() {
         </DialogContent>
       </Dialog>
 
+      {/* directions */}
+      {/* origin */}
+      <Dialog
+        open={directionsState}
+        onOpenChange={(value) => {
+          setDirectionsState(value);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Directions</DialogTitle>
+            <DialogDescription>
+              Select a starting point and a destination.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex">
+            <Popover open={originOpen} onOpenChange={setOriginOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  disabled={isBlueDotDirection && !isBlueDotDirection2}
+                  role="combobox"
+                  aria-expanded={originOpen}
+                  className="w-[200px] justify-between"
+                  // className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
+                >
+                  {originValue
+                    ? locations.find(
+                        (locationName) => locationName.value === originValue
+                      )?.label
+                    : originState
+                    ? originState.properties.name
+                    : "Search"}
+                  {/* <CommandShortcut>⌘K</CommandShortcut> */}
+                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-0">
+                <Command loop>
+                  <CommandInput placeholder="Search location..." />
+                  {/* <CommandList>
+              {loading && <span>Loading...</span>} */}
+                  <CommandEmpty>No location found.</CommandEmpty>
+                  <CommandGroup>
+                    <ScrollArea className="h-40">
+                      {locations.map((locationName) => (
+                        <CommandItem
+                          key={locationName.value}
+                          value={locationName.value}
+                          onSelect={(currentValue) => {
+                            mapsindoors.services.LocationsService.getLocation(
+                              locationName.locationid
+                            ).then((location) => {
+                              setOriginState(location);
+                            });
+                            setValue(
+                              currentValue === originValue ? "" : currentValue
+                            );
+                            setOriginOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              originValue === locationName.value
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {locationName.label}
+                        </CommandItem>
+                      ))}
+                    </ScrollArea>
+                  </CommandGroup>
+                  {/* </CommandList> */}
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            <Switch
+              checked={isBlueDotDirection}
+              onCheckedChange={(change) => {
+                if (isBlueDotDirection2) {
+                  setIsBlueDotDirection2(false);
+                }
+                setIsBlueDotDirection(change);
+              }}
+              className="ml-4 mt-2"
+            />
+            <Image
+              priority
+              src={blueDotIcon}
+              alt="bluedot"
+              className="h-[28px] w-[28px] ml-2 my-1"
+            />
+          </div>
+
+          <MoveDown className="ml-[88px]" />
+
+          {/* destination */}
+          <div className="flex">
+            <Popover open={destOpen} onOpenChange={setDestOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  disabled={!isBlueDotDirection && isBlueDotDirection2}
+                  role="combobox"
+                  aria-expanded={destOpen}
+                  className="w-[200px] justify-between"
+                  // className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
+                >
+                  {destValue
+                    ? locations.find(
+                        (locationName) => locationName.value === destValue
+                      )?.label
+                    : destState
+                    ? destState.properties.name
+                    : "Search"}
+                  {/* <CommandShortcut>⌘K</CommandShortcut> */}
+                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-0">
+                <Command loop>
+                  <CommandInput placeholder="Search location..." />
+                  {/* <CommandList>
+              {loading && <span>Loading...</span>} */}
+                  <CommandEmpty>No location found.</CommandEmpty>
+                  <CommandGroup>
+                    <ScrollArea className="h-40">
+                      {locations.map((locationName) => (
+                        <CommandItem
+                          key={locationName.value}
+                          value={locationName.value}
+                          onSelect={(currentValue) => {
+                            mapsindoors.services.LocationsService.getLocation(
+                              locationName.locationid
+                            ).then((location) => {
+                              setDestState(location);
+                            });
+                            setDestValue(
+                              currentValue === destValue ? "" : currentValue
+                            );
+                            setDestOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              destValue === locationName.value
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {locationName.label}
+                        </CommandItem>
+                      ))}
+                    </ScrollArea>
+                  </CommandGroup>
+                  {/* </CommandList> */}
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            <Switch
+              checked={isBlueDotDirection2}
+              onCheckedChange={(change) => {
+                if (isBlueDotDirection) {
+                  setIsBlueDotDirection(false);
+                }
+                setIsBlueDotDirection2(change);
+              }}
+              className="ml-4 mt-2"
+            />
+            <Image
+              priority
+              src={blueDotIcon}
+              alt="bluedot"
+              className="h-[28px] w-[28px] ml-2 my-1"
+            />
+          </div>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                onClick={() => {
+                  setDirectionsState(false);
+                  handleDirections(originState, destState);
+                }}
+              >
+                Confirm
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* search */}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -1088,7 +1428,7 @@ export default function Map() {
                   const originCoords = {
                     lat: positionRef.current.coords.latitude,
                     lng: positionRef.current.coords.longitude,
-                    // floor: 0,
+                    floor: 0,
                   };
                   const destCoords = {
                     lat: 30.3606261,
