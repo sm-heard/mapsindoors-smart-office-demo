@@ -104,6 +104,9 @@ import parkingData from "@/data/parking2433-2448.json";
 import Image from "next/image";
 import mapboxIcon from "@/public/mapbox-svg.svg";
 import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg";
+import restroomIcon from "@/public/restroom.png";
+import canteenIcon from "@/public/canteen.png";
+import meetingRoomIcon from "@/public/meetingroom.png";
 import blueDotIcon from "@/public/bluedot.svg";
 import { Switch } from "./ui/switch";
 
@@ -122,7 +125,11 @@ export default function Map() {
   const directionsServiceRef = useRef(null);
   const directionsRendererRef = useRef(null);
   const positionRef = useRef({
-    coords: { latitude: 30.3605, longitude: -97.7421388, floor: 0 },
+    coords: {
+      latitude: 30.360573677092603,
+      longitude: -97.74225010031331,
+      floor: 0,
+    },
   });
 
   const [lightPresetState, setLightPresetState] = useState("dawn");
@@ -1236,7 +1243,7 @@ export default function Map() {
             disabled={buttonDisabledAnimation}
             role="combobox"
             aria-expanded={open}
-            className="w-[200px] justify-between absolute z-50 top-5 left-8"
+            className="w-[200px] justify-between absolute z-50 top-16 left-8"
             // className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
           >
             {value
@@ -1303,8 +1310,8 @@ export default function Map() {
       <ToggleGroup
         variant="outline"
         type="single"
-        // className="absolute z-50 top-5 left-64"
-        className="absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
+        className="absolute z-50 top-5 left-8"
+        // className="absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
         disabled={buttonDisabledAnimation}
         onValueChange={(value) => {
           toast.dismiss();
@@ -1326,9 +1333,14 @@ export default function Map() {
               <ToggleGroupItem
                 value="restroom"
                 aria-label="Toggle restroom"
-                className="bg-card"
+                className="bg-white !px-2"
               >
-                <FaRestroom />
+                <Image
+                  priority
+                  src={restroomIcon}
+                  alt="restroom"
+                  className="h-6 w-6"
+                />
               </ToggleGroupItem>
             </TooltipTrigger>
             <TooltipContent side="top">
@@ -1374,9 +1386,14 @@ export default function Map() {
               <ToggleGroupItem
                 value="meetingroom"
                 aria-label="Toggle meeting room"
-                className="bg-card"
+                className="bg-white !px-2"
               >
-                <MdPeopleAlt />
+                <Image
+                  priority
+                  src={meetingRoomIcon}
+                  alt="meetingroom"
+                  className="h-6 w-6"
+                />
               </ToggleGroupItem>
             </TooltipTrigger>
             <TooltipContent side="top">
@@ -1422,9 +1439,14 @@ export default function Map() {
               <ToggleGroupItem
                 value="canteen"
                 aria-label="Toggle canteen"
-                className="bg-card"
+                className="bg-white !px-2"
               >
-                <PiForkKnifeFill />
+                <Image
+                  priority
+                  src={canteenIcon}
+                  alt="canteen"
+                  className="h-6 w-6"
+                />
               </ToggleGroupItem>
             </TooltipTrigger>
             <TooltipContent side="top">
