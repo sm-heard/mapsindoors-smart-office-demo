@@ -697,6 +697,36 @@ export default function Map() {
       }
     });
   }, [floorState]);
+  // set initial booked
+  useEffect(() => {
+    const etLocation = "1d9c57051bcb454e9e482bf4";
+    const myWorkstation = "98805eace3a2454dbc3bc584";
+    const myParking = "0cdb7123d5914f22b46d702b";
+    saveIDsForDate(etLocation);
+    saveIDsForDate(myWorkstation);
+    saveIDsForDate(myParking);
+    mapsIndoorsRef.current.overrideDisplayRule(
+      etLocation,
+      smallMeetingRoomRef.current
+    );
+    mapsIndoorsRef.current.overrideDisplayRule(
+      myWorkstation,
+      workstationRef.current
+    );
+    mapsIndoorsRef.current.overrideDisplayRule(myParking, parkingRef.current);
+    // saveIDsForDate(selectedLocation.id);
+    //               mapsIndoorsRef.current.overrideDisplayRule(
+    //                 selectedLocation.id,
+    //                 selectedLocation.properties.type === "MeetingRoom Small"
+    //                   ? smallMeetingRoomRef.current
+    //                   : selectedLocation.properties.type ===
+    //                     "MeetingRoom Medium"
+    //                   ? mediumMeetingRoomRef.current
+    //                   : selectedLocation.properties.type === "Workstation 1.4m"
+    //                   ? workstationRef.current
+    //                   : parkingRef.current
+    //               );
+  }, []);
   // get appConfig
   // useEffect(() => {
   //   mapsindoors.services.AppConfigService.getConfig().then(config => {
