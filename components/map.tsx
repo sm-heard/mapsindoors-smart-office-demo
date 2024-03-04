@@ -347,6 +347,7 @@ export default function Map() {
   };
 
   const handleClick = (location) => {
+    toast.dismiss();
     directionsRendererRef.current.setRoute(null);
     setDirectionsCardOpen(false);
     mapsIndoorsRef.current.selectLocation(location);
