@@ -105,7 +105,7 @@ import Image from "next/image";
 import mapboxIcon from "@/public/mapbox-svg.svg";
 import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg";
 import restroomIcon from "@/public/restroom.png";
-import canteenIcon from "@/public/canteen.png";
+import canteenIcon from "@/public/canteen2.png";
 import meetingRoomIcon from "@/public/meetingroom.png";
 import blueDotIcon from "@/public/bluedot.svg";
 import { Switch } from "./ui/switch";
@@ -1491,7 +1491,7 @@ export default function Map() {
                   priority
                   src={canteenIcon}
                   alt="canteen"
-                  className="h-6 w-6"
+                  className="h-[22px] w-[22px] m-[1px]"
                 />
               </ToggleGroupItem>
             </TooltipTrigger>
