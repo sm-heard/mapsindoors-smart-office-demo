@@ -1102,6 +1102,7 @@ export default function Map() {
           <DialogFooter>
             <DialogClose asChild>
               <Button
+              disabled={selectedLocation && retrieveIDsForDate(dateState).includes(selectedLocation.id)}
                 onClick={() => {
                   saveIDsForDate(selectedLocation.id);
                   mapsIndoorsRef.current.overrideDisplayRule(
