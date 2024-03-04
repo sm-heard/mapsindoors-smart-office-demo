@@ -1068,7 +1068,28 @@ export default function Map() {
                 mode="single"
                 selected={dateState}
                 onSelect={(date) => {
+                  mapsIndoorsRef.current.revertDisplayRule(
+                    retrieveIDsForDate(dateState)
+                  );
                   setDateState(date);
+
+                  const ids = retrieveIDsForDate(date);
+                  for (const id of ids) {
+                    mapsindoors.services.LocationsService.getLocation(id).then(
+                      (location) => {
+                        mapsIndoorsRef.current.overrideDisplayRule(
+                          id,
+                          location.properties.type === "MeetingRoom Small"
+                            ? smallMeetingRoomRef.current
+                            : location.properties.type === "MeetingRoom Medium"
+                            ? mediumMeetingRoomRef.current
+                            : location.properties.type === "Workstation 1.4m"
+                            ? workstationRef.current
+                            : parkingRef.current
+                        );
+                      }
+                    );
+                  }
                   setCalendarOpen(false);
                 }}
                 fromDate={new Date()}
