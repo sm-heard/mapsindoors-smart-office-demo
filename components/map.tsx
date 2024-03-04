@@ -20,9 +20,6 @@ import {
   CornerUpRight,
   MoveDown,
 } from "lucide-react";
-import { FaRestroom } from "react-icons/fa";
-import { MdPeopleAlt } from "react-icons/md";
-import { PiForkKnifeFill } from "react-icons/pi";
 import { MdCo2 } from "react-icons/md";
 
 import {
@@ -78,23 +75,15 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 import smallMeetingRoomData from "@/data/smallMeetingRoom.json";
 import mediumMeetingRoomData from "@/data/mediumMeetingRoom.json";
@@ -166,6 +155,9 @@ export default function Map() {
   const [directionsState, setDirectionsState] = useState(false);
   const [isBlueDotDirection, setIsBlueDotDirection] = useState(true);
   const [isBlueDotDirection2, setIsBlueDotDirection2] = useState(false);
+
+  const [directionsCardOpen, setDirectionsCardOpen] = useState(false);
+  const [directionsResultState, setDirectionsResultState] = useState(null);
 
   function saveIDsForDate(newId) {
     const currentDate = format(dateState, "yyyy-MM-dd");
@@ -481,6 +473,7 @@ export default function Map() {
   const handleDirections = (origin, destination) => {
     let originCoords;
     let destCoords;
+    let originName;
     if (isBlueDotDirection) {
       originCoords = {
         lat: positionRef.current.coords.latitude,
@@ -515,7 +508,9 @@ export default function Map() {
         travelMode: "DRIVING",
       })
       .then((directionsResult) => {
+        setDirectionsResultState(directionsResult);
         directionsRendererRef.current.setRoute(directionsResult);
+        setDirectionsCardOpen(true);
       });
   };
 
@@ -1471,7 +1466,9 @@ export default function Map() {
               travelMode: "DRIVING",
             })
             .then((directionsResult) => {
+              setDirectionsResultState(directionsResult);
               directionsRendererRef.current.setRoute(directionsResult);
+              setDirectionsCardOpen(true);
             });
         }}
       >
@@ -1480,6 +1477,34 @@ export default function Map() {
       <span className="absolute z-50 top-1 left-44 text-xs text-muted-foreground">
         Nearest
       </span>
+
+      {/* directions card */}
+      {directionsCardOpen && (
+      <Card className="absolute z-50 bottom-5 right-1/2 transform translate-x-1/2 bg-primary text-white opacity-40">
+        <CardHeader>
+          <CardTitle>
+            {originState ? originState.properties.name : "My Position"} &#x2192;{" "}
+            {destState ? destState.properties.name : "My Position"}
+          </CardTitle>
+          {/* <CardDescription>Card Description</CardDescription> */}
+        </CardHeader>
+        <CardContent className="flex items-center justify-evenly">
+          <div className="">Distance: {directionsResultState.legs[0].distance.value + " ft."}</div>
+          <div className="">Duration: {directionsResultState.legs[0].duration.value + " sec."}</div>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              directionsRendererRef.current.setRoute(null);
+              setDirectionsCardOpen(false);
+            }}
+          >
+            End Route
+          </Button>
+        </CardFooter>
+      </Card>
+      )}
 
       {/* search switch */}
       {/* <Image
