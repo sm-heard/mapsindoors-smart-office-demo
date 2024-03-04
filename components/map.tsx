@@ -638,14 +638,14 @@ export default function Map() {
       const res = await mapsindoors.services.LocationsService.getLocations({
         floor: "0",
         venue: "AUSTINOFFICE",
-        types: [
-          "MeetingRoom Small",
-          "MeetingRoom Medium",
-          "Workstation 1.4m",
-          "Parking",
-          "Restroom",
-          "Canteen",
-        ],
+        // types: [
+        //   "MeetingRoom Small",
+        //   "MeetingRoom Medium",
+        //   "Workstation 1.4m",
+        //   "Parking",
+        //   "Restroom",
+        //   "Canteen",
+        // ],
         q: "",
       });
       const locationNames = res

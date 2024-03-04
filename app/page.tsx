@@ -33,12 +33,14 @@ export default function Home() {
         <span className="text-lg font-semibold">DigiSpaces</span>
         <Tabs
           className="flex ml-auto"
-          value={navigation}
-          onValueChange={(value) => {
-            setNavigation(value);
-          }}
+          aria-disabled={true}
+          value="map"
+          // value={navigation}
+          // onValueChange={(value) => {
+          //   setNavigation(value);
+          // }}
         >
-          <TabsList className="flex gap-2">
+          <TabsList className="flex gap-2" aria-disabled={true}>
             <TabsTrigger value="home">Home</TabsTrigger>
             <TabsTrigger value="map">Map</TabsTrigger>
             <TabsTrigger value="contact">Reports</TabsTrigger>
