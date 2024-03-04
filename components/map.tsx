@@ -1529,7 +1529,7 @@ export default function Map() {
 
       {/* directions card */}
       {directionsCardOpen && (
-        <Card className="absolute z-50 bottom-5 right-1/2 transform translate-x-1/2 bg-primary text-white opacity-40">
+        <Card className="absolute z-50 bottom-5 right-1/2 transform translate-x-1/2 bg-primary text-white opacity-55">
           <CardHeader>
             <CardTitle>
               {originState ? originState.properties.name : "My Position"}{" "}
