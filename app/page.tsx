@@ -5,6 +5,8 @@ import { useState } from "react";
 import "./mapbox-gl.css";
 import Map from "@/components/map";
 import { Building2 } from "lucide-react";
+import logoIcon from "@/public/logo.svg";
+import Image from "next/image";
 import { TabsTrigger, TabsContent, TabsList, Tabs } from "@/components/ui/tabs";
 
 export default function Home() {
@@ -27,9 +29,10 @@ export default function Home() {
         }}
       />
 
-      <div className="relative h-svh bg-primary">
-      <header className="flex items-center px-6 py-2 text-white">
-        <Building2 className="mr-2" />
+      <div className="relative h-svh bg-secondary">
+      <header className="flex items-center px-6 py-2 text-primary">
+        {/* <Building2 className="mr-2" /> */}
+        <Image src={logoIcon} alt="logo" width={24} height={24} className="mr-2" />
         <span className="text-lg font-semibold">DigiSpaces</span>
         <Tabs
           className="flex ml-auto"
