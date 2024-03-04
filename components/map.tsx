@@ -150,6 +150,10 @@ export default function Map() {
   const [restroomsList, setRestroomsList] = useState([]);
   const [meetingroomsList, setMeetingroomsList] = useState([]);
   const [canteensList, setCanteensList] = useState([]);
+  const [nearestRestroom, setNearestRestroom] = useState(null);
+  const [nearestMeetingroom, setNearestMeetingroom] = useState(null);
+  const [nearestCanteen, setNearestCanteen] = useState(null);
+
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [directionsState, setDirectionsState] = useState(false);
@@ -343,6 +347,8 @@ export default function Map() {
   };
 
   const handleClick = (location) => {
+    directionsRendererRef.current.setRoute(null);
+    setDirectionsCardOpen(false);
     mapsIndoorsRef.current.selectLocation(location);
     setSelectedLocation(location);
     setDestState(location);
@@ -473,7 +479,6 @@ export default function Map() {
   const handleDirections = (origin, destination) => {
     let originCoords;
     let destCoords;
-    let originName;
     if (isBlueDotDirection) {
       originCoords = {
         lat: positionRef.current.coords.latitude,
@@ -739,6 +744,24 @@ export default function Map() {
     //                   ? workstationRef.current
     //                   : parkingRef.current
     //               );
+  }, []);
+  // get nearest locations
+  useEffect(() => {
+    mapsindoors.services.LocationsService.getLocation(
+      "d909e13d6a9d4d749b11a54c"
+    ).then((location) => {
+      setNearestRestroom(location);
+    });
+    mapsindoors.services.LocationsService.getLocation(
+      "e8a2f84d85de438cada2afda"
+    ).then((location) => {
+      setNearestMeetingroom(location);
+    });
+    mapsindoors.services.LocationsService.getLocation(
+      "5ec919233c40492dab3ecd64"
+    ).then((location) => {
+      setNearestCanteen(location);
+    });
   }, []);
   // get appConfig
   // useEffect(() => {
@@ -1359,6 +1382,7 @@ export default function Map() {
         onValueChange={(value) => {
           toast.dismiss();
           directionsRendererRef.current.setRoute(null);
+          setDirectionsCardOpen(false);
           if (value !== "") {
             mapboxMapRef.current.flyTo({
               center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
@@ -1436,26 +1460,30 @@ export default function Map() {
             floor: 0,
           };
           let destCoords;
+
           if (categoryValue === "restroom") {
             // restroom
+            setDestState(nearestRestroom);
             destCoords = {
-              lat: 30.3606261,
-              lng: -97.7420631,
-              floor: 0,
+              lat: nearestRestroom.properties.anchor.coordinates[1],
+              lng: nearestRestroom.properties.anchor.coordinates[0],
+              floor: nearestRestroom.properties.floor,
             };
           } else if (categoryValue === "meetingroom") {
             // meetingroom
+            setDestState(nearestMeetingroom);
             destCoords = {
-              lat: 30.3605378,
-              lng: -97.7421196,
-              floor: 0,
+              lat: nearestMeetingroom.properties.anchor.coordinates[1],
+              lng: nearestMeetingroom.properties.anchor.coordinates[0],
+              floor: nearestMeetingroom.properties.floor,
             };
           } else if (categoryValue === "canteen") {
             // canteen
+            setDestState(nearestCanteen);
             destCoords = {
-              lat: 30.3606577,
-              lng: -97.7421094,
-              floor: 0,
+              lat: nearestCanteen.properties.anchor.coordinates[1],
+              lng: nearestCanteen.properties.anchor.coordinates[0],
+              floor: nearestCanteen.properties.floor,
             };
           }
 
@@ -1480,30 +1508,34 @@ export default function Map() {
 
       {/* directions card */}
       {directionsCardOpen && (
-      <Card className="absolute z-50 bottom-5 right-1/2 transform translate-x-1/2 bg-primary text-white opacity-40">
-        <CardHeader>
-          <CardTitle>
-            {originState ? originState.properties.name : "My Position"} &#x2192;{" "}
-            {destState ? destState.properties.name : "My Position"}
-          </CardTitle>
-          {/* <CardDescription>Card Description</CardDescription> */}
-        </CardHeader>
-        <CardContent className="flex items-center justify-evenly">
-          <div className="">Distance: {directionsResultState.legs[0].distance.value + " ft."}</div>
-          <div className="">Duration: {directionsResultState.legs[0].duration.value + " sec."}</div>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Button
-            variant="secondary"
-            onClick={() => {
-              directionsRendererRef.current.setRoute(null);
-              setDirectionsCardOpen(false);
-            }}
-          >
-            End Route
-          </Button>
-        </CardFooter>
-      </Card>
+        <Card className="absolute z-50 bottom-5 right-1/2 transform translate-x-1/2 bg-primary text-white opacity-40">
+          <CardHeader>
+            <CardTitle>
+              {originState ? originState.properties.name : "My Position"}{" "}
+              &#x2192; {destState ? destState.properties.name : "My Position"}
+            </CardTitle>
+            {/* <CardDescription>Card Description</CardDescription> */}
+          </CardHeader>
+          <CardContent className="flex items-center justify-evenly">
+            <div className="mr-1">
+              Distance: {directionsResultState.legs[0].distance.value + " ft."}
+            </div>
+            <div className="">
+              Duration: {directionsResultState.legs[0].duration.value + " sec."}
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                directionsRendererRef.current.setRoute(null);
+                setDirectionsCardOpen(false);
+              }}
+            >
+              End Route
+            </Button>
+          </CardFooter>
+        </Card>
       )}
 
       {/* search switch */}
