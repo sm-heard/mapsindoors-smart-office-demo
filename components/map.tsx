@@ -353,6 +353,9 @@ export default function Map() {
     setSelectedLocation(location);
     setDestState(location);
     const locationType = location.properties.type;
+    const etLocation = "1d9c57051bcb454e9e482bf4";
+    const myWorkstation = "98805eace3a2454dbc3bc584";
+    const myParking = "0cdb7123d5914f22b46d702b";
 
     toast(
       <div className="flex flex-col mx-auto">
@@ -360,26 +363,39 @@ export default function Map() {
           <MapPin className="mx-2" />
           {location.properties.name}
         </div>
-        <div className="space-x-4">
-          <Badge
-            variant="secondary"
-            className="bg-[#4ADE80] hover:bg-[#4ADE90]"
-          >
-            <User className="mr-2" />
-            {locationType === "Workstation 1.4m" && <>&#x2714;</>}
-            {locationType === "MeetingRoom Small" && <>0/4</>}
-            {locationType === "MeetingRoom Medium" && <>0/6</>}
-          </Badge>
-          <Badge variant="secondary" className="">
-            <Thermometer className="mr-2" />
-            {Math.floor(Math.random() * (24 - 21 + 1)) + 21}°C
-          </Badge>
-          <Badge variant="destructive" className="">
-            <MdCo2 className="h-6 w-6 mr-2" />
-            {/* 22 m² */}
-            {Math.floor(Math.random() * (1850 - 450 + 1)) + 450} PPM
-          </Badge>
-        </div>
+        {(locationType === "MeetingRoom Small" ||
+          locationType === "MeetingRoom Medium" ||
+          locationType === "Workstation 1.4m") && (
+          <div className="space-x-4">
+            <Badge
+              variant="secondary"
+              className="bg-[#4ADE80] hover:bg-[#4ADE90]"
+            >
+              <User className="mr-2" />
+              {location.id === myWorkstation ? (
+                <>&#x2718;</>
+              ) : (
+                locationType === "Workstation 1.4m" && <>&#x2714;</>
+              )}
+              {/* {locationType === "MeetingRoom Small" && <>0/4</>} */}
+              {location.id === etLocation ? (
+                <>2/4</>
+              ) : (
+                locationType === "MeetingRoom Small" && <>0/4</>
+              )}
+              {locationType === "MeetingRoom Medium" && <>0/6</>}
+            </Badge>
+            <Badge variant="secondary" className="">
+              <Thermometer className="mr-2" />
+              {Math.floor(Math.random() * (24 - 21 + 1)) + 21}°C
+            </Badge>
+            <Badge variant="destructive" className="">
+              <MdCo2 className="h-6 w-6 mr-2" />
+              {/* 22 m² */}
+              {Math.floor(Math.random() * (1850 - 450 + 1)) + 450} PPM
+            </Badge>
+          </div>
+        )}
         {locationType === "MeetingRoom Small" && (
           <div className="flex flex-row justify-center mt-8">
             <Button
