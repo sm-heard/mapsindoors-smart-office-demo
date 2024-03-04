@@ -154,6 +154,8 @@ export default function Map() {
   const [destValue, setDestValue] = useState("");
   const [originState, setOriginState] = useState(null);
   const [destState, setDestState] = useState(null);
+  const [isCategoryToggled, setIsCategoryToggled] = useState(false);
+  const [categoryValue, setCategoryValue] = useState("");
 
   const [locations, setLocations] = useState([]);
   const [restroomsList, setRestroomsList] = useState([]);
@@ -1362,6 +1364,19 @@ export default function Map() {
         onValueChange={(value) => {
           toast.dismiss();
           directionsRendererRef.current.setRoute(null);
+          if (value !== "") {
+            mapboxMapRef.current.flyTo({
+              center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
+              zoom: 19,
+              pitch: mapViewOptions.pitch,
+              bearing: 99,
+              duration: 1500,
+            });
+            setCategoryValue(value);
+            setIsCategoryToggled(true);
+          } else {
+            setIsCategoryToggled(false);
+          }
           if (value === "restroom") {
             mapsIndoorsRef.current.highlight(restroomsList);
           } else if (value === "meetingroom") {
@@ -1373,167 +1388,98 @@ export default function Map() {
           }
         }}
       >
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger>
-              <ToggleGroupItem
-                value="restroom"
-                aria-label="Toggle restroom"
-                className="bg-white !px-2"
-              >
-                <Image
-                  priority
-                  src={restroomIcon}
-                  alt="restroom"
-                  className="h-6 w-6"
-                />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <Button
-                variant="outline"
-                size="icon"
-                id="directionsButton"
-                className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
-                onClick={() => {
-                  toast.dismiss();
-                  const originCoords = {
-                    lat: positionRef.current.coords.latitude,
-                    lng: positionRef.current.coords.longitude,
-                    floor: 0,
-                  };
-                  const destCoords = {
-                    lat: 30.3606261,
-                    lng: -97.7420631,
-                    floor: 0,
-                  };
+        <ToggleGroupItem
+          value="restroom"
+          aria-label="Toggle restroom"
+          className="bg-white !px-2"
+        >
+          <Image
+            priority
+            src={restroomIcon}
+            alt="restroom"
+            className="h-6 w-6"
+          />
+        </ToggleGroupItem>
 
-                  directionsServiceRef.current
-                    .getRoute({
-                      origin: originCoords,
-                      destination: destCoords,
-                      travelMode: "DRIVING",
-                    })
-                    .then((directionsResult) => {
-                      directionsRendererRef.current.setRoute(directionsResult);
-                    });
-                }}
-              >
-                <CornerUpRight className="h-4 w-4" />
-              </Button>
-              <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
-                Nearby
-              </span>
-            </TooltipContent>
-          </Tooltip>
+        <ToggleGroupItem
+          value="meetingroom"
+          aria-label="Toggle meeting room"
+          className="bg-white !px-2"
+        >
+          <Image
+            priority
+            src={meetingRoomIcon}
+            alt="meetingroom"
+            className="h-6 w-6"
+          />
+        </ToggleGroupItem>
 
-          <Tooltip>
-            <TooltipTrigger>
-              <ToggleGroupItem
-                value="meetingroom"
-                aria-label="Toggle meeting room"
-                className="bg-white !px-2"
-              >
-                <Image
-                  priority
-                  src={meetingRoomIcon}
-                  alt="meetingroom"
-                  className="h-6 w-6"
-                />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <Button
-                variant="outline"
-                size="icon"
-                id="directionsButton"
-                className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
-                onClick={() => {
-                  toast.dismiss();
-                  const originCoords = {
-                    lat: positionRef.current.coords.latitude,
-                    lng: positionRef.current.coords.longitude,
-                    floor: 0,
-                  };
-                  const destCoords = {
-                    lat: 30.3605378,
-                    lng: -97.7421196,
-                    floor: 0,
-                  };
-
-                  directionsServiceRef.current
-                    .getRoute({
-                      origin: originCoords,
-                      destination: destCoords,
-                      travelMode: "DRIVING",
-                    })
-                    .then((directionsResult) => {
-                      directionsRendererRef.current.setRoute(directionsResult);
-                    });
-                }}
-              >
-                <CornerUpRight className="h-4 w-4" />
-              </Button>
-              <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
-                Nearby
-              </span>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger>
-              <ToggleGroupItem
-                value="canteen"
-                aria-label="Toggle canteen"
-                className="bg-white !px-2"
-              >
-                <Image
-                  priority
-                  src={canteenIcon}
-                  alt="canteen"
-                  className="h-[22px] w-[22px] m-[1px]"
-                />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <Button
-                variant="outline"
-                size="icon"
-                id="directionsButton"
-                className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc]"
-                onClick={() => {
-                  toast.dismiss();
-                  const originCoords = {
-                    lat: positionRef.current.coords.latitude,
-                    lng: positionRef.current.coords.longitude,
-                    // floor: 0,
-                  };
-                  const destCoords = {
-                    lat: 30.3606577,
-                    lng: -97.7421094,
-                    floor: 0,
-                  };
-
-                  directionsServiceRef.current
-                    .getRoute({
-                      origin: originCoords,
-                      destination: destCoords,
-                      travelMode: "DRIVING",
-                    })
-                    .then((directionsResult) => {
-                      directionsRendererRef.current.setRoute(directionsResult);
-                    });
-                }}
-              >
-                <CornerUpRight className="h-4 w-4" />
-              </Button>
-              <span className="flex flex-row justify-center mt-1 text-xs text-muted-foreground">
-                Nearby
-              </span>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <ToggleGroupItem
+          value="canteen"
+          aria-label="Toggle canteen"
+          className="bg-white !px-2"
+        >
+          <Image
+            priority
+            src={canteenIcon}
+            alt="canteen"
+            className="h-[22px] w-[22px] m-[1px]"
+          />
+        </ToggleGroupItem>
       </ToggleGroup>
+      <Button
+        variant="outline"
+        size="icon"
+        id="directionsButton"
+        disabled={buttonDisabledAnimation || !isCategoryToggled}
+        className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc] absolute z-50 top-5 left-44"
+        onClick={() => {
+          toast.dismiss();
+          const originCoords = {
+            lat: positionRef.current.coords.latitude,
+            lng: positionRef.current.coords.longitude,
+            floor: 0,
+          };
+          let destCoords;
+          if (categoryValue === "restroom") {
+            // restroom
+            destCoords = {
+              lat: 30.3606261,
+              lng: -97.7420631,
+              floor: 0,
+            };
+          } else if (categoryValue === "meetingroom") {
+            // meetingroom
+            destCoords = {
+              lat: 30.3605378,
+              lng: -97.7421196,
+              floor: 0,
+            };
+          } else if (categoryValue === "canteen") {
+            // canteen
+            destCoords = {
+              lat: 30.3606577,
+              lng: -97.7421094,
+              floor: 0,
+            };
+          }
+
+          directionsServiceRef.current
+            .getRoute({
+              origin: originCoords,
+              destination: destCoords,
+              travelMode: "DRIVING",
+            })
+            .then((directionsResult) => {
+              directionsRendererRef.current.setRoute(directionsResult);
+            });
+        }}
+      >
+        <CornerUpRight className="h-4 w-4" />
+      </Button>
+      <span className="absolute z-50 top-1 left-44 text-xs text-muted-foreground">
+        Nearest
+      </span>
 
       {/* search switch */}
       {/* <Image
