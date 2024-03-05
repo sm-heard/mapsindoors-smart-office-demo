@@ -352,6 +352,10 @@ export default function Map() {
     setDirectionsCardOpen(false);
     mapsIndoorsRef.current.selectLocation(location);
     setSelectedLocation(location);
+    setOriginState(null);
+    setOriginValue("");
+    setIsBlueDotDirection(true);
+    setIsBlueDotDirection2(false);
     setDestState(location);
     const locationType = location.properties.type;
     const etLocation = "1d9c57051bcb454e9e482bf4";
@@ -1481,6 +1485,8 @@ export default function Map() {
         className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc] absolute z-50 top-5 left-44"
         onClick={() => {
           toast.dismiss();
+          setOriginState(null);
+          setOriginValue("");
           const originCoords = {
             lat: positionRef.current.coords.latitude,
             lng: positionRef.current.coords.longitude,
