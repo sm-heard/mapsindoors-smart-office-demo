@@ -374,7 +374,7 @@ export default function Map() {
           <div className="space-x-4">
             <Badge
               variant="secondary"
-              className="bg-[#4ADE80] hover:bg-[#4ADE90]"
+              className={cn(location.id === myWorkstation ? "bg-[#F87171] hover:bg-[#F88181]" : "bg-[#4ADE80] hover:bg-[#4ADE90]")}
             >
               <User className="mr-2" />
               {location.id === myWorkstation ? (
