@@ -665,6 +665,8 @@ export default function Map() {
       const res = await mapsindoors.services.LocationsService.getLocations({
         floor: "0",
         venue: "AUSTINOFFICE",
+        // orderBy: "name",
+        // sortOrder: "DESC",
         // types: [
         //   "MeetingRoom Small",
         //   "MeetingRoom Medium",
@@ -673,7 +675,7 @@ export default function Map() {
         //   "Restroom",
         //   "Canteen",
         // ],
-        q: "",
+        // q: "",
       });
       const locationNames = res
         .filter((location) => location.properties.name !== null)
