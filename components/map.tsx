@@ -700,7 +700,6 @@ export default function Map() {
       setCanteensList(canteens);
 
       setLocations(locationNames);
-      console.log(locationNames);
       setLoading(false);
     }
 
