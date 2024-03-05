@@ -481,6 +481,8 @@ export default function Map() {
     let originCoords;
     let destCoords;
     if (isBlueDotDirection) {
+      setOriginState(null);
+      setOriginValue("");
       originCoords = {
         lat: positionRef.current.coords.latitude,
         lng: positionRef.current.coords.longitude,
@@ -494,6 +496,8 @@ export default function Map() {
       };
     }
     if (isBlueDotDirection2) {
+      setDestState(null);
+      setDestValue("");
       destCoords = {
         lat: positionRef.current.coords.latitude,
         lng: positionRef.current.coords.longitude,
