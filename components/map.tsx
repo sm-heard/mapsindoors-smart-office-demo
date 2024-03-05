@@ -1541,9 +1541,9 @@ export default function Map() {
 
       {/* directions card */}
       {directionsCardOpen && (
-        <Card className="absolute z-50 bottom-5 right-1/2 transform translate-x-1/2 bg-primary text-white opacity-55">
+        <Card className="absolute z-50 bottom-5 transform-none right-8 left-8 md:right-1/2 md:left-auto md:transform md:translate-x-1/2 bg-primary text-white opacity-55">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="flex justify-evenly">
               {originState ? originState.properties.name : "My Position"}{" "}
               &#x2192; {destState ? destState.properties.name : "My Position"}
             </CardTitle>
