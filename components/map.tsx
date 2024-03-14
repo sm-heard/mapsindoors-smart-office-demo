@@ -758,7 +758,7 @@ export default function Map() {
   // get nearest locations
   useEffect(() => {
     mapsindoors.services.LocationsService.getLocation(
-      "d909e13d6a9d4d749b11a54c"
+      "0b506c501a9c4afe9a24db3e"
     ).then((location) => {
       setNearestRestroom(location);
     });
