@@ -344,6 +344,7 @@ export default function Map() {
     await delay(4000);
 
     setButtonDisabledAnimation(false);
+    toast.dismiss();
   };
 
   const handleClick = (location) => {
