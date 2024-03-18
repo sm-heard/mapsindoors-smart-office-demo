@@ -680,11 +680,12 @@ export default function Map() {
       });
       const locationNames = res
         .filter((location) => location.properties.name !== null)
-        .map((location) => ({
-          value: location.properties.name.toLowerCase() + location.id,
+        .map((location, index) => ({
+          value: location.properties.name.toLowerCase() + index,
           label: location.properties.name,
           locationid: location.id,
         }));
+        console.log(locationNames);
       const restrooms = res
         .filter((location) => location.properties.type === "Restroom")
         .map((location) => location.id);
