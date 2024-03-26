@@ -17,13 +17,13 @@ export default function Home() {
     <>
       <Script
         src={
-          "https://app.mapsindoors.com/mapsindoors/js/sdk/4.30.0/mapsindoors-4.30.0.js.gz?apikey="}
+          "https://app.mapsindoors.com/mapsindoors/js/sdk/4.31.0/mapsindoors-4.31.0.js.gz?apikey="}
         onLoad={() => {
           setMapsindoorsReady(true);
         }}
       />
       <Script
-        src={"https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"}
+        src={"https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"}
         onLoad={() => {
           setMapboxReady(true);
         }}

@@ -685,7 +685,6 @@ export default function Map() {
           label: location.properties.name,
           locationid: location.id,
         }));
-        console.log(locationNames);
       const restrooms = res
         .filter((location) => location.properties.type === "Restroom")
         .map((location) => location.id);
