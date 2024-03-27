@@ -362,6 +362,9 @@ export default function Map() {
     const etLocation = "1d9c57051bcb454e9e482bf4";
     const myWorkstation = "98805eace3a2454dbc3bc584";
     const myParking = "0cdb7123d5914f22b46d702b";
+    const alienLocation = "e8a2f84d85de438cada2afda";
+    const deadpoolLocation = "09c45490917f4eb4abe0448d";
+    const oceanselevenLocation = "5527950860a44c2593757857";
 
     toast(
       <div className="flex flex-col mx-auto">
@@ -375,7 +378,11 @@ export default function Map() {
           <div className="space-x-4">
             <Badge
               variant="secondary"
-              className={cn(location.id === myWorkstation ? "bg-[#F87171] hover:bg-[#F88181]" : "bg-[#4ADE80] hover:bg-[#4ADE90]")}
+              className={cn(
+                location.id === myWorkstation
+                  ? "bg-[#F87171] hover:bg-[#F88181]"
+                  : "bg-[#4ADE80] hover:bg-[#4ADE90]"
+              )}
             >
               <User className="mr-2" />
               {location.id === myWorkstation ? (
@@ -386,10 +393,18 @@ export default function Map() {
               {/* {locationType === "MeetingRoom Small" && <>0/4</>} */}
               {location.id === etLocation ? (
                 <>2/4</>
+              ) : location.id === deadpoolLocation ? (
+                <>2/4</>
               ) : (
                 locationType === "MeetingRoom Small" && <>0/4</>
               )}
-              {locationType === "MeetingRoom Medium" && <>0/6</>}
+              {location.id === alienLocation ? (
+                <>1/6</>
+              ) : location.id === oceanselevenLocation ? (
+                <>5/6</>
+              ) : (
+                locationType === "MeetingRoom Medium" && <>0/6</>
+              )}
             </Badge>
             <Badge variant="secondary" className="">
               <Thermometer className="mr-2" />
@@ -1112,7 +1127,10 @@ export default function Map() {
           <DialogFooter>
             <DialogClose asChild>
               <Button
-              disabled={selectedLocation && retrieveIDsForDate(dateState).includes(selectedLocation.id)}
+                disabled={
+                  selectedLocation &&
+                  retrieveIDsForDate(dateState).includes(selectedLocation.id)
+                }
                 onClick={() => {
                   saveIDsForDate(selectedLocation.id);
                   mapsIndoorsRef.current.overrideDisplayRule(
