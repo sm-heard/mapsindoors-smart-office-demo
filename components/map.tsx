@@ -393,15 +393,11 @@ export default function Map() {
               {/* {locationType === "MeetingRoom Small" && <>0/4</>} */}
               {location.id === etLocation ? (
                 <>2/4</>
-              ) : location.id === deadpoolLocation ? (
-                <>2/4</>
               ) : (
                 locationType === "MeetingRoom Small" && <>0/4</>
               )}
               {location.id === alienLocation ? (
                 <>1/6</>
-              ) : location.id === oceanselevenLocation ? (
-                <>5/6</>
               ) : (
                 locationType === "MeetingRoom Medium" && <>0/6</>
               )}
