@@ -1,26 +1,42 @@
 "use client";
 
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useAtom } from "jotai";
 import {
-  Sunrise,
-  Sun,
-  Sunset,
-  Moon,
-  Settings,
-  Box,
-  Diamond,
-  User,
+  lightPresetAtom,
+  buttonDisabledAnimationAtom,
+  dateStateAtom,
+  dateToIdsMapAtom,
+  bookingStateAtom,
+  selectedLocationAtom,
+  locationsAtom,
+  originStateAtom,
+  originValueAtom,
+  destStateAtom,
+  destValueAtom,
+  directionsStateAtom,
+  isBlueDotDirectionAtom,
+  isBlueDotDirection2Atom,
+  directionsResultStateAtom,
+  directionsCardOpenAtom,
+} from "@/lib/atoms";
+import {
   Thermometer,
   Building,
   MapPin,
-  MapPinned,
-  CalendarDays,
   Check,
   Search,
   CornerUpRight,
-  MoveDown,
 } from "lucide-react";
+import { User as UserIcon } from "lucide-react";
 import { MdCo2 } from "react-icons/md";
+
+import Settings from "@/components/settings";
+import User from "@/components/user";
+import Availability from "@/components/availability";
+import Login from "@/components/login";
+import Booking from "@/components/booking";
+import Directions from "@/components/directions";
 
 import {
   Command,
@@ -28,46 +44,16 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList,
   CommandShortcut,
 } from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar } from "@/components/ui/calendar";
-import { format, isToday, set } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+
+import { format } from "date-fns";
 import {
   Popover,
   PopoverContent,
@@ -79,16 +65,15 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 
-import smallMeetingRoomData from "@/data/smallMeetingRoom.json";
-import mediumMeetingRoomData from "@/data/mediumMeetingRoom.json";
-import workstationData from "@/data/workstation.json";
-import parkingData from "@/data/parking2433-2448.json";
+import smallMeetingRoomDisplayRule from "@/data/smallMeetingRoom.json";
+import mediumMeetingRoomDisplayRule from "@/data/mediumMeetingRoom.json";
+import workstationDisplayRule from "@/data/workstation.json";
+import parkingDisplayRule from "@/data/parking2433-2448.json";
 
 import Image from "next/image";
 import mapboxIcon from "@/public/mapbox-svg.svg";
@@ -96,12 +81,9 @@ import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg";
 import restroomIcon from "@/public/restroom.png";
 import canteenIcon from "@/public/canteen2.png";
 import meetingRoomIcon from "@/public/meetingroom.png";
-import blueDotIcon from "@/public/bluedot.svg";
-import { Switch } from "./ui/switch";
 
 export default function Map() {
   const mapsindoors = window.mapsindoors;
-  const mapboxgl = window.mapboxgl;
 
   const smallMeetingRoomRef = useRef({});
   const mediumMeetingRoomRef = useRef({});
@@ -121,32 +103,30 @@ export default function Map() {
     },
   });
 
-  const [lightPresetState, setLightPresetState] = useState("dawn");
+  const [lightPresetState, setLightPresetState] = useAtom(lightPresetAtom);
   const [dimensionState, setDimensionState] = useState("3d");
-  const [loginState, setLoginState] = useState("staff");
 
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  const [buttonDisabledAnimation, setButtonDisabledAnimation] = useState(true);
+  const [buttonDisabledAnimation, setButtonDisabledAnimation] = useAtom(
+    buttonDisabledAnimationAtom
+  );
 
-  const [dateState, setDateState] = useState<Date | undefined>(new Date());
-  const [bookingState, setBookingState] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [dateState, setDateState] = useAtom(dateStateAtom);
+  const [bookingState, setBookingState] = useAtom(bookingStateAtom);
+  const [selectedLocation, setSelectedLocation] = useAtom(selectedLocationAtom);
   const [floorState, setFloorState] = useState(0);
-  const [dateToIdsMap, setDateToIdsMap] = useState({});
+  const [dateToIdsMap, setDateToIdsMap] = useAtom(dateToIdsMapAtom);
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-  const [originOpen, setOriginOpen] = useState(false);
-  const [destOpen, setDestOpen] = useState(false);
-  const [originValue, setOriginValue] = useState("");
-  const [destValue, setDestValue] = useState("");
-  const [originState, setOriginState] = useState(null);
-  const [destState, setDestState] = useState(null);
+
+  const [originValue, setOriginValue] = useAtom(originValueAtom);
+  const [destValue, setDestValue] = useAtom(destValueAtom);
+  const [originState, setOriginState] = useAtom(originStateAtom);
+  const [destState, setDestState] = useAtom(destStateAtom);
   const [isCategoryToggled, setIsCategoryToggled] = useState(false);
   const [categoryValue, setCategoryValue] = useState("");
 
-  const [locations, setLocations] = useState([]);
+  const [locations, setLocations] = useAtom(locationsAtom);
   const [restroomsList, setRestroomsList] = useState([]);
   const [meetingroomsList, setMeetingroomsList] = useState([]);
   const [canteensList, setCanteensList] = useState([]);
@@ -154,14 +134,21 @@ export default function Map() {
   const [nearestMeetingroom, setNearestMeetingroom] = useState(null);
   const [nearestCanteen, setNearestCanteen] = useState(null);
 
-  const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
-  const [directionsState, setDirectionsState] = useState(false);
-  const [isBlueDotDirection, setIsBlueDotDirection] = useState(true);
-  const [isBlueDotDirection2, setIsBlueDotDirection2] = useState(false);
+  const [directionsState, setDirectionsState] = useAtom(directionsStateAtom);
+  const [isBlueDotDirection, setIsBlueDotDirection] = useAtom(
+    isBlueDotDirectionAtom
+  );
+  const [isBlueDotDirection2, setIsBlueDotDirection2] = useAtom(
+    isBlueDotDirection2Atom
+  );
 
-  const [directionsCardOpen, setDirectionsCardOpen] = useState(false);
-  const [directionsResultState, setDirectionsResultState] = useState(null);
+  const [directionsCardOpen, setDirectionsCardOpen] = useAtom(
+    directionsCardOpenAtom
+  );
+  const [directionsResultState, setDirectionsResultState] = useAtom(
+    directionsResultStateAtom
+  );
 
   function saveIDsForDate(newId) {
     const currentDate = format(dateState, "yyyy-MM-dd");
@@ -177,12 +164,6 @@ export default function Map() {
       // Return the updated associations, including the newly added IDs for the current date
       return { ...prev, [currentDate]: updatedIdsForDate };
     });
-  }
-
-  function retrieveIDsForDate(date) {
-    // if (dateState !== date) return [];
-    const formattedDate = format(date, "yyyy-MM-dd");
-    return dateToIdsMap[formattedDate] || [];
   }
 
   const mapViewOptions = {
@@ -201,14 +182,6 @@ export default function Map() {
 
   function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  function getLocationCoords(location) {
-    return {
-      lat: location.properties.anchor.coordinates[1],
-      lng: location.properties.anchor.coordinates[0],
-      floor: location.properties.floor,
-    };
   }
 
   const initBlueDot = () => {
@@ -312,41 +285,6 @@ export default function Map() {
     });
   };
 
-  const goToVenue = async () => {
-    const mapboxMap = mapboxMapRef.current;
-    const mapsIndoors = mapsIndoorsRef.current;
-
-    toast("Austin Office", {
-      duration: 9000,
-      icon: <Building />,
-      className: "justify-center",
-      closeButton: false,
-    });
-
-    mapboxMap.flyTo({
-      center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
-      zoom: 19,
-      pitch: mapViewOptions.pitch,
-      bearing: mapViewOptions.bearing + 45,
-      duration: 4500,
-    });
-
-    await delay(5000);
-
-    mapboxMap.flyTo({
-      center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
-      zoom: 21,
-      pitch: mapViewOptions.pitch,
-      bearing: mapViewOptions.bearing + 90,
-      duration: 4500,
-    });
-
-    await delay(4000);
-
-    setButtonDisabledAnimation(false);
-    toast.dismiss();
-  };
-
   const handleClick = (location) => {
     toast.dismiss();
     directionsRendererRef.current.setRoute(null);
@@ -384,7 +322,7 @@ export default function Map() {
                   : "bg-[#4ADE80] hover:bg-[#4ADE90]"
               )}
             >
-              <User className="mr-2" />
+              <UserIcon className="mr-2" />
               {location.id === myWorkstation ? (
                 <>&#x2718;</>
               ) : (
@@ -493,53 +431,6 @@ export default function Map() {
     );
   };
 
-  const handleDirections = (origin, destination) => {
-    let originCoords;
-    let destCoords;
-    if (isBlueDotDirection) {
-      setOriginState(null);
-      setOriginValue("");
-      originCoords = {
-        lat: positionRef.current.coords.latitude,
-        lng: positionRef.current.coords.longitude,
-        floor: 0,
-      };
-    } else {
-      originCoords = {
-        lat: origin.properties.anchor.coordinates[1],
-        lng: origin.properties.anchor.coordinates[0],
-        floor: origin.properties.floor,
-      };
-    }
-    if (isBlueDotDirection2) {
-      setDestState(null);
-      setDestValue("");
-      destCoords = {
-        lat: positionRef.current.coords.latitude,
-        lng: positionRef.current.coords.longitude,
-        floor: 0,
-      };
-    } else {
-      destCoords = {
-        lat: destination.properties.anchor.coordinates[1],
-        lng: destination.properties.anchor.coordinates[0],
-        floor: destination.properties.floor,
-      };
-    }
-
-    directionsServiceRef.current
-      .getRoute({
-        origin: originCoords,
-        destination: destCoords,
-        travelMode: "DRIVING",
-      })
-      .then((directionsResult) => {
-        setDirectionsResultState(directionsResult);
-        directionsRendererRef.current.setRoute(directionsResult);
-        setDirectionsCardOpen(true);
-      });
-  };
-
   useEffect(() => {
     mapsindoors.MapsIndoors.addVenuesToSync("dfea941bb3694e728df92d3d");
     mapsindoors.MapsIndoors.setMapsIndoorsApiKey(
@@ -575,41 +466,6 @@ export default function Map() {
       setFloorState(floor);
     });
 
-    // const myPositionControlElement = document.createElement("div");
-    // const positionControl = new mapsindoors.PositionControl(
-    //   myPositionControlElement,
-    //   {
-    //     mapsIndoors: mapsIndoors,
-    //     maxAccuracy: 75,
-    //     positionOptions: {
-    //       enableHighAccuracy: true,
-    //     },
-    //     positionMarkerStyles: {
-    //       radius: "10px",
-    //       strokeWidth: "2px",
-    //       strokeColor: "hsl(0, 0%, 100%)",
-    //       fillColor: "hsl(217, 69%, 52%)",
-    //       fillOpacity: 1,
-    //     },
-    //     accuracyCircleStyles: {
-    //       fillColor: "hsl(217, 69%, 52%)",
-    //       fillOpacity: 0,
-    //     },
-    //   }
-    // );
-    // mapboxMap.addControl({
-    //   onAdd: function () {
-    //     return myPositionControlElement;
-    //   },
-    //   onRemove: function () {},
-    // });
-    // positionControl.on("position_received", () => {
-    //   positionRef.current = positionControl.currentPosition;
-    // });
-    // positionRef.current = {
-    //   coords: { latitude: 30.3605081, longitude: -97.7421388 },
-    // };
-
     const floorSelectorDiv = document.createElement("div");
     const floorSelector = new mapsindoors.FloorSelector(
       floorSelectorDiv,
@@ -622,19 +478,9 @@ export default function Map() {
       onRemove: function () {},
     });
     floorSelectorDiv.style.marginTop = "192px";
-    // floorSelectorDiv.style.marginRight = "2rem";
 
     directionsServiceRef.current = directionsService;
     directionsRendererRef.current = directionsRenderer;
-
-    // mapsindoors.services.SolutionsService.getUserRoles().then(
-    //   (userRoles) => {}
-    // );
-
-    let smallMeetingRoomDisplayRule = smallMeetingRoomData;
-    let mediumMeetingRoomDisplayRule = mediumMeetingRoomData;
-    let workstationDisplayRule = workstationData;
-    let parkingDisplayRule = parkingData;
 
     smallMeetingRoomRef.current = smallMeetingRoomDisplayRule;
     mediumMeetingRoomRef.current = mediumMeetingRoomDisplayRule;
@@ -794,559 +640,33 @@ export default function Map() {
 
   return (
     <>
-      {/* settings */}
-      <Drawer>
-        <DrawerTrigger asChild>
-          <Button
-            size="icon"
-            className="absolute z-50 top-32 right-8"
-            disabled={buttonDisabledAnimation}
-          >
-            <Settings />
-          </Button>
-        </DrawerTrigger>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle className="place-self-center">Settings</DrawerTitle>
-          </DrawerHeader>
-          <DrawerFooter>
-            <Tabs
-              value={lightPresetState}
-              className="place-self-center"
-              onValueChange={(value) => {
-                setLightPresetState(value);
-                mapboxMapRef.current.setConfigProperty(
-                  "basemap",
-                  "lightPreset",
-                  value
-                );
-              }}
-            >
-              <TabsList>
-                <TabsTrigger value="dawn">
-                  <Sunrise className="" />
-                </TabsTrigger>
-                <TabsTrigger value="day">
-                  <Sun className="" />
-                </TabsTrigger>
-                <TabsTrigger value="dusk">
-                  <Sunset className="" />
-                </TabsTrigger>
-                <TabsTrigger value="night">
-                  <Moon className="" />
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            {/* 2D to 3D */}
-            {/* <Tabs
-              value={dimensionState}
-              className="place-self-center mt-5"
-              onValueChange={(value) => {
-                setDimensionState(value);
-                if (value === "3d") {
-                  mapboxMapRef.current.setLayoutProperty(
-                    "MI_WALLS_LAYER",
-                    "visibility",
-                    "visible"
-                  );
-                  mapboxMapRef.current.setLayoutProperty(
-                    "MI_ROOMS_LAYER",
-                    "visibility",
-                    "visible"
-                  );
-                  mapboxMapRef.current.setLayoutProperty(
-                    "MI_MODEL_3D_LAYER",
-                    "visibility",
-                    "visible"
-                  );
-                  let solutionConfig =
-                    mapsIndoorsRef.current.getSolutionConfig();
-                  solutionConfig.mainDisplayRule.model2DVisible = false;
-                  mapsIndoorsRef.current.setSolutionConfig(solutionConfig);
-                } else {
-                  mapboxMapRef.current.setLayoutProperty(
-                    "MI_WALLS_LAYER",
-                    "visibility",
-                    "none"
-                  );
-                  mapboxMapRef.current.setLayoutProperty(
-                    "MI_ROOMS_LAYER",
-                    "visibility",
-                    "none"
-                  );
-                  mapboxMapRef.current.setLayoutProperty(
-                    "MI_MODEL_3D_LAYER",
-                    "visibility",
-                    "none"
-                  );
-                  // mapboxMapRef.current.setLayoutProperty(
-                  //   "MI_POINT_LAYER",
-                  //   "visibility",
-                  //   "none"
-                  // );
-                  // mapboxMapRef.current.setLayoutProperty(
-                  //   "MI_POLYGON_LAYER",
-                  //   "visibility",
-                  //   "none"
-                  // );
-                  let solutionConfig =
-                    mapsIndoorsRef.current.getSolutionConfig();
-                  solutionConfig.mainDisplayRule.model2DVisible = true;
-                  mapsIndoorsRef.current.setSolutionConfig(solutionConfig);
-                  // mapsIndoorsRef.current.setDisplayRule("MeetingRoom Small", {wallsHeight: 3});
-                }
-              }}
-            >
-              <TabsList>
-                <TabsTrigger value="2d">
-                  <Diamond className="" />
-                </TabsTrigger>
-                <TabsTrigger value="3d">
-                  <Box className="" />
-                </TabsTrigger>
-              </TabsList>
-            </Tabs> */}
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+      <Settings mapboxMapRef={mapboxMapRef} />
 
-      {/* user */}
-      <Drawer>
-        <DrawerTrigger asChild>
-          <Button
-            size="icon"
-            variant="secondary"
-            className="absolute z-50 top-5 right-8"
-            disabled={buttonDisabledAnimation}
-          >
-            <Avatar className="p-1">
-              <AvatarImage src={`${loginState}.png`} />
-              <AvatarFallback>U</AvatarFallback>
-            </Avatar>
-          </Button>
-        </DrawerTrigger>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle className="place-self-center">
-              {loginState.toUpperCase()}
-            </DrawerTitle>
-          </DrawerHeader>
-          <DrawerFooter></DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+      <User />
 
-      {/* calendar */}
-      <Drawer>
-        <DrawerTrigger asChild>
-          <Button
-            size="icon"
-            variant="default"
-            className="absolute z-50 top-20 right-8"
-            disabled={buttonDisabledAnimation}
-          >
-            <CalendarDays />
-          </Button>
-        </DrawerTrigger>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle className="place-self-center">
-              See Availability
-            </DrawerTitle>
-          </DrawerHeader>
-          <DrawerFooter className="mx-auto">
-            <Calendar
-              mode="single"
-              selected={dateState}
-              onSelect={(date) => {
-                mapsIndoorsRef.current.revertDisplayRule(
-                  retrieveIDsForDate(dateState)
-                );
-                mapsIndoorsRef.current.deselectLocation();
-                setDateState(date);
-                const ids = retrieveIDsForDate(date);
-                for (const id of ids) {
-                  mapsindoors.services.LocationsService.getLocation(id).then(
-                    (location) => {
-                      mapsIndoorsRef.current.overrideDisplayRule(
-                        id,
-                        location.properties.type === "MeetingRoom Small"
-                          ? smallMeetingRoomRef.current
-                          : location.properties.type === "MeetingRoom Medium"
-                          ? mediumMeetingRoomRef.current
-                          : location.properties.type === "Workstation 1.4m"
-                          ? workstationRef.current
-                          : parkingRef.current
-                      );
-                    }
-                  );
-                }
-              }}
-              fromDate={new Date()}
-              required
-              initialFocus
-            />
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+      <Availability
+        mapsIndoorsRef={mapsIndoorsRef}
+        smallMeetingRoomRef={smallMeetingRoomRef}
+        mediumMeetingRoomRef={mediumMeetingRoomRef}
+        workstationRef={workstationRef}
+        parkingRef={parkingRef}
+      />
 
-      {/* login */}
-      <Dialog defaultOpen={true} onOpenChange={goToVenue}>
-        {/* <DialogTrigger></DialogTrigger> */}
-        <DialogContent className="justify-center items-center">
-          <DialogHeader>
-            <DialogTitle className="flex justify-center items-center">
-              <MapPinned />
-            </DialogTitle>
-            {/* <DialogDescription className="flex justify-center items-center">
-              Smart Office Demo
-            </DialogDescription> */}
-          </DialogHeader>
-          <div className="flex justify-center items-center">Logged in as:</div>
-          <div className="flex justify-center items-center mb-6">
-            <Select
-              value={loginState}
-              onValueChange={(value) => {
-                setLoginState(value);
-              }}
-            >
-              <SelectTrigger className="w-[140px] mx-2">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="staff">Staff</SelectItem>
-                <SelectItem value="maintenance">Maintenance</SelectItem>
-              </SelectContent>
-            </Select>
-            <Avatar>
-              <AvatarImage src={`${loginState}.png`} />
-              <AvatarFallback>U</AvatarFallback>
-            </Avatar>
-          </div>
-          <DialogFooter className="flex">
-            <DialogClose asChild className="mx-auto">
-              <Button type="button" variant="secondary">
-                Continue
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Login mapboxMapRef={mapboxMapRef} mapViewOptions={mapViewOptions} />
 
-      {/* booking */}
-      <Dialog
-        open={bookingState}
-        onOpenChange={(value) => {
-          setBookingState(value);
-        }}
-      >
-        {/* <DialogTrigger></DialogTrigger> */}
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {selectedLocation &&
-                selectedLocation.properties.type === "MeetingRoom Small" && (
-                  <span>Book Room</span>
-                )}
-              {selectedLocation &&
-                selectedLocation.properties.type === "MeetingRoom Medium" && (
-                  <span>Book Room</span>
-                )}
-              {selectedLocation &&
-                selectedLocation.properties.type === "Workstation 1.4m" && (
-                  <span>Book Workstation</span>
-                )}
-              {selectedLocation &&
-                selectedLocation.properties.type === "Parking" && (
-                  <span>Reserve Parking</span>
-                )}
-            </DialogTitle>
-            {/* <DialogDescription>
-            </DialogDescription> */}
-          </DialogHeader>
-          <Popover
-            onOpenChange={(value) => {
-              setCalendarOpen(value);
-            }}
-            open={calendarOpen}
-          >
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-[280px] justify-start text-left font-normal",
-                  !dateState && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateState ? (
-                  format(dateState, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={dateState}
-                onSelect={(date) => {
-                  mapsIndoorsRef.current.revertDisplayRule(
-                    retrieveIDsForDate(dateState)
-                  );
-                  setDateState(date);
+      <Booking
+        mapsIndoorsRef={mapsIndoorsRef}
+        smallMeetingRoomRef={smallMeetingRoomRef}
+        mediumMeetingRoomRef={mediumMeetingRoomRef}
+        workstationRef={workstationRef}
+        parkingRef={parkingRef}
+      />
 
-                  const ids = retrieveIDsForDate(date);
-                  for (const id of ids) {
-                    mapsindoors.services.LocationsService.getLocation(id).then(
-                      (location) => {
-                        mapsIndoorsRef.current.overrideDisplayRule(
-                          id,
-                          location.properties.type === "MeetingRoom Small"
-                            ? smallMeetingRoomRef.current
-                            : location.properties.type === "MeetingRoom Medium"
-                            ? mediumMeetingRoomRef.current
-                            : location.properties.type === "Workstation 1.4m"
-                            ? workstationRef.current
-                            : parkingRef.current
-                        );
-                      }
-                    );
-                  }
-                  setCalendarOpen(false);
-                }}
-                fromDate={new Date()}
-                required
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button
-                disabled={
-                  selectedLocation &&
-                  retrieveIDsForDate(dateState).includes(selectedLocation.id)
-                }
-                onClick={() => {
-                  saveIDsForDate(selectedLocation.id);
-                  mapsIndoorsRef.current.overrideDisplayRule(
-                    selectedLocation.id,
-                    selectedLocation.properties.type === "MeetingRoom Small"
-                      ? smallMeetingRoomRef.current
-                      : selectedLocation.properties.type ===
-                        "MeetingRoom Medium"
-                      ? mediumMeetingRoomRef.current
-                      : selectedLocation.properties.type === "Workstation 1.4m"
-                      ? workstationRef.current
-                      : parkingRef.current
-                  );
-                }}
-              >
-                Confirm
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* directions */}
-      {/* origin */}
-      <Dialog
-        open={directionsState}
-        onOpenChange={(value) => {
-          setDirectionsState(value);
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Directions</DialogTitle>
-            <DialogDescription>
-              Select a starting point and a destination.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex">
-            <Popover open={originOpen} onOpenChange={setOriginOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  disabled={isBlueDotDirection && !isBlueDotDirection2}
-                  role="combobox"
-                  aria-expanded={originOpen}
-                  className="w-[200px] justify-between"
-                  // className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
-                >
-                  {originValue
-                    ? locations.find(
-                        (locationName) => locationName.value === originValue
-                      )?.label
-                    : originState
-                    ? originState.properties.name
-                    : "Search"}
-                  {/* <CommandShortcut>⌘K</CommandShortcut> */}
-                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0">
-                <Command loop>
-                  <CommandInput placeholder="Search location..." />
-                  {/* <CommandList>
-              {loading && <span>Loading...</span>} */}
-                  <CommandEmpty>No location found.</CommandEmpty>
-                  <CommandGroup>
-                    <ScrollArea className="h-40">
-                      {locations.map((locationName) => (
-                        <CommandItem
-                          key={locationName.value}
-                          value={locationName.value}
-                          onSelect={(currentValue) => {
-                            mapsindoors.services.LocationsService.getLocation(
-                              locationName.locationid
-                            ).then((location) => {
-                              setOriginState(location);
-                            });
-                            setOriginValue(
-                              currentValue === originValue ? "" : currentValue
-                            );
-                            setOriginOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              originValue === locationName.value
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {locationName.label}
-                        </CommandItem>
-                      ))}
-                    </ScrollArea>
-                  </CommandGroup>
-                  {/* </CommandList> */}
-                </Command>
-              </PopoverContent>
-            </Popover>
-
-            <Switch
-              checked={isBlueDotDirection}
-              onCheckedChange={(change) => {
-                if (isBlueDotDirection2) {
-                  setIsBlueDotDirection2(false);
-                }
-                setIsBlueDotDirection(change);
-              }}
-              className="ml-4 mt-2"
-            />
-            <Image
-              priority
-              src={blueDotIcon}
-              alt="bluedot"
-              className="h-[28px] w-[28px] ml-2 my-1"
-            />
-          </div>
-
-          <MoveDown className="ml-[88px]" />
-
-          {/* destination */}
-          <div className="flex">
-            <Popover open={destOpen} onOpenChange={setDestOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  disabled={!isBlueDotDirection && isBlueDotDirection2}
-                  role="combobox"
-                  aria-expanded={destOpen}
-                  className="w-[200px] justify-between"
-                  // className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
-                >
-                  {destValue
-                    ? locations.find(
-                        (locationName) => locationName.value === destValue
-                      )?.label
-                    : destState
-                    ? destState.properties.name
-                    : "Search"}
-                  {/* <CommandShortcut>⌘K</CommandShortcut> */}
-                  <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0">
-                <Command loop>
-                  <CommandInput placeholder="Search location..." />
-                  {/* <CommandList>
-              {loading && <span>Loading...</span>} */}
-                  <CommandEmpty>No location found.</CommandEmpty>
-                  <CommandGroup>
-                    <ScrollArea className="h-40">
-                      {locations.map((locationName) => (
-                        <CommandItem
-                          key={locationName.value}
-                          value={locationName.value}
-                          onSelect={(currentValue) => {
-                            mapsindoors.services.LocationsService.getLocation(
-                              locationName.locationid
-                            ).then((location) => {
-                              setDestState(location);
-                            });
-                            setDestValue(
-                              currentValue === destValue ? "" : currentValue
-                            );
-                            setDestOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              destValue === locationName.value
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {locationName.label}
-                        </CommandItem>
-                      ))}
-                    </ScrollArea>
-                  </CommandGroup>
-                  {/* </CommandList> */}
-                </Command>
-              </PopoverContent>
-            </Popover>
-
-            <Switch
-              checked={isBlueDotDirection2}
-              onCheckedChange={(change) => {
-                if (isBlueDotDirection) {
-                  setIsBlueDotDirection(false);
-                }
-                setIsBlueDotDirection2(change);
-              }}
-              className="ml-4 mt-2"
-            />
-            <Image
-              priority
-              src={blueDotIcon}
-              alt="bluedot"
-              className="h-[28px] w-[28px] ml-2 my-1"
-            />
-          </div>
-
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button
-                type="button"
-                disabled={!originState && !isBlueDotDirection}
-                onClick={() => {
-                  setDirectionsState(false);
-                  handleDirections(originState, destState);
-                }}
-              >
-                Confirm
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Directions
+        positionRef={positionRef}
+        directionsServiceRef={directionsServiceRef}
+        directionsRendererRef={directionsRendererRef}
+      />
 
       {/* search */}
       <Popover open={open} onOpenChange={setOpen}>
