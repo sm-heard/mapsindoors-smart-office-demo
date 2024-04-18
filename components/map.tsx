@@ -37,6 +37,7 @@ import Availability from "@/components/availability";
 import Login from "@/components/login";
 import Booking from "@/components/booking";
 import Directions from "@/components/directions";
+import SearchBox from "@/components/searchbox";
 
 import {
   Command,
@@ -115,9 +116,6 @@ export default function Map() {
   const [selectedLocation, setSelectedLocation] = useAtom(selectedLocationAtom);
   const [floorState, setFloorState] = useState(0);
   const [dateToIdsMap, setDateToIdsMap] = useAtom(dateToIdsMapAtom);
-
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
 
   const [originValue, setOriginValue] = useAtom(originValueAtom);
   const [destValue, setDestValue] = useAtom(destValueAtom);
@@ -431,6 +429,7 @@ export default function Map() {
     );
   };
 
+  //init mapsindoors and stuff
   useEffect(() => {
     mapsindoors.MapsIndoors.addVenuesToSync("dfea941bb3694e728df92d3d");
     mapsindoors.MapsIndoors.setMapsIndoorsApiKey(
@@ -505,16 +504,6 @@ export default function Map() {
     return () => {
       mapsIndoors.off("click", handleClick);
     };
-  }, []);
-  // open command menu
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && e.metaKey) {
-        setOpen((open) => !open);
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
   }, []);
   // get locations
   useEffect(() => {
@@ -668,76 +657,12 @@ export default function Map() {
         directionsRendererRef={directionsRendererRef}
       />
 
-      {/* search */}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            disabled={buttonDisabledAnimation}
-            role="combobox"
-            aria-expanded={open}
-            className="w-[200px] justify-between absolute z-50 top-16 left-8"
-            // className="w-[200px] justify-between absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
-          >
-            {value
-              ? locations.find((locationName) => locationName.value === value)
-                  ?.label
-              : "Search"}
-            <CommandShortcut>⌘K</CommandShortcut>
-            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          <Command loop>
-            <CommandInput placeholder="Search location..." />
-            {/* <CommandList>
-              {loading && <span>Loading...</span>} */}
-            <CommandEmpty>No location found.</CommandEmpty>
-            <CommandGroup>
-              <ScrollArea className="h-40">
-                {locations.map((locationName) => (
-                  <CommandItem
-                    key={locationName.value}
-                    value={locationName.value}
-                    onSelect={(currentValue) => {
-                      directionsRendererRef.current.setRoute(null);
-                      mapsindoors.services.LocationsService.getLocation(
-                        locationName.locationid
-                      ).then((location) => {
-                        const destCoords = {
-                          lat: location.properties.anchor.coordinates[1],
-                          lng: location.properties.anchor.coordinates[0],
-                        };
-                        mapboxMapRef.current.flyTo({
-                          center: [destCoords.lng, destCoords.lat],
-                          zoom: 21,
-                          pitch: mapViewOptions.pitch,
-                          bearing: mapboxMapRef.current.getBearing() + 90,
-                          duration: 3500,
-                        });
-                        handleClick(location);
-                      });
-                      setValue(currentValue === value ? "" : currentValue);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === locationName.value
-                          ? "opacity-100"
-                          : "opacity-0"
-                      )}
-                    />
-                    {locationName.label}
-                  </CommandItem>
-                ))}
-              </ScrollArea>
-            </CommandGroup>
-            {/* </CommandList> */}
-          </Command>
-        </PopoverContent>
-      </Popover>
+      <SearchBox
+        directionsRendererRef={directionsRendererRef}
+        mapboxMapRef={mapboxMapRef}
+        mapViewOptions={mapViewOptions}
+        handleClick={handleClick}
+      />
 
       {/* Highlight Locations */}
       <ToggleGroup

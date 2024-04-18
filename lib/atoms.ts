@@ -20,6 +20,8 @@ const isBlueDotDirectionAtom = atom(true);
 const isBlueDotDirection2Atom = atom(false);
 const directionsResultStateAtom = atom(null);
 const directionsCardOpenAtom = atom(false);
+const openAtom = atom(false);
+const valueAtom = atom("");
 
 export {
   lightPresetAtom,
@@ -42,4 +44,6 @@ export {
   isBlueDotDirection2Atom,
   directionsResultStateAtom,
   directionsCardOpenAtom,
+  openAtom,
+  valueAtom,
 };
