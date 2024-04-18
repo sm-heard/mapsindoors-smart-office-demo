@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import {
   lightPresetAtom,
-  buttonDisabledAnimationAtom,
   dateStateAtom,
   dateToIdsMapAtom,
   bookingStateAtom,
@@ -13,14 +12,10 @@ import {
   originStateAtom,
   originValueAtom,
   destStateAtom,
-  destValueAtom,
   directionsStateAtom,
   isBlueDotDirectionAtom,
   isBlueDotDirection2Atom,
-  directionsResultStateAtom,
   directionsCardOpenAtom,
-  categoryValueAtom,
-  isCategoryToggledAtom,
   restroomsListAtom,
   meetingroomsListAtom,
   canteensListAtom,
@@ -78,10 +73,6 @@ export default function Map() {
   });
 
   const [lightPresetState, setLightPresetState] = useAtom(lightPresetAtom);
-
-  const [buttonDisabledAnimation, setButtonDisabledAnimation] = useAtom(
-    buttonDisabledAnimationAtom
-  );
 
   const [dateState, setDateState] = useAtom(dateStateAtom);
   const [bookingState, setBookingState] = useAtom(bookingStateAtom);
