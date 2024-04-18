@@ -22,6 +22,14 @@ const directionsResultStateAtom = atom(null);
 const directionsCardOpenAtom = atom(false);
 const openAtom = atom(false);
 const valueAtom = atom("");
+const categoryValueAtom = atom("");
+const isCategoryToggledAtom = atom(false);
+const restroomsListAtom = atom([]);
+const meetingroomsListAtom = atom([]);
+const canteensListAtom = atom([]);
+const nearestRestroomAtom = atom(null);
+const nearestMeetingroomAtom = atom(null);
+const nearestCanteenAtom = atom(null);
 
 export {
   lightPresetAtom,
@@ -46,4 +54,12 @@ export {
   directionsCardOpenAtom,
   openAtom,
   valueAtom,
+  categoryValueAtom,
+  isCategoryToggledAtom,
+  restroomsListAtom,
+  meetingroomsListAtom,
+  canteensListAtom,
+  nearestRestroomAtom,
+  nearestMeetingroomAtom,
+  nearestCanteenAtom,
 };

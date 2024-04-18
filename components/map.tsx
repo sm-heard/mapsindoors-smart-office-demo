@@ -19,15 +19,16 @@ import {
   isBlueDotDirection2Atom,
   directionsResultStateAtom,
   directionsCardOpenAtom,
+  categoryValueAtom,
+  isCategoryToggledAtom,
+  restroomsListAtom,
+  meetingroomsListAtom,
+  canteensListAtom,
+  nearestRestroomAtom,
+  nearestMeetingroomAtom,
+  nearestCanteenAtom,
 } from "@/lib/atoms";
-import {
-  Thermometer,
-  Building,
-  MapPin,
-  Check,
-  Search,
-  CornerUpRight,
-} from "lucide-react";
+import { Thermometer, MapPin, CornerUpRight } from "lucide-react";
 import { User as UserIcon } from "lucide-react";
 import { MdCo2 } from "react-icons/md";
 
@@ -38,16 +39,8 @@ import Login from "@/components/login";
 import Booking from "@/components/booking";
 import Directions from "@/components/directions";
 import SearchBox from "@/components/searchbox";
-
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandShortcut,
-} from "@/components/ui/command";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import DirectionsCard from "@/components/directionscard";
+import CategoriesGroup from "@/components/categoriesgroup";
 
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
@@ -55,33 +48,13 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
 import { format } from "date-fns";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 import smallMeetingRoomDisplayRule from "@/data/smallMeetingRoom.json";
 import mediumMeetingRoomDisplayRule from "@/data/mediumMeetingRoom.json";
 import workstationDisplayRule from "@/data/workstation.json";
 import parkingDisplayRule from "@/data/parking2433-2448.json";
-
-import Image from "next/image";
-import mapboxIcon from "@/public/mapbox-svg.svg";
-import mapsIndoorsIcon from "@/public/mapsindoors-svg.svg";
-import restroomIcon from "@/public/restroom.png";
-import canteenIcon from "@/public/canteen2.png";
-import meetingRoomIcon from "@/public/meetingroom.png";
 
 export default function Map() {
   const mapsindoors = window.mapsindoors;
@@ -105,7 +78,6 @@ export default function Map() {
   });
 
   const [lightPresetState, setLightPresetState] = useAtom(lightPresetAtom);
-  const [dimensionState, setDimensionState] = useState("3d");
 
   const [buttonDisabledAnimation, setButtonDisabledAnimation] = useAtom(
     buttonDisabledAnimationAtom
@@ -118,19 +90,18 @@ export default function Map() {
   const [dateToIdsMap, setDateToIdsMap] = useAtom(dateToIdsMapAtom);
 
   const [originValue, setOriginValue] = useAtom(originValueAtom);
-  const [destValue, setDestValue] = useAtom(destValueAtom);
   const [originState, setOriginState] = useAtom(originStateAtom);
   const [destState, setDestState] = useAtom(destStateAtom);
-  const [isCategoryToggled, setIsCategoryToggled] = useState(false);
-  const [categoryValue, setCategoryValue] = useState("");
 
   const [locations, setLocations] = useAtom(locationsAtom);
-  const [restroomsList, setRestroomsList] = useState([]);
-  const [meetingroomsList, setMeetingroomsList] = useState([]);
-  const [canteensList, setCanteensList] = useState([]);
-  const [nearestRestroom, setNearestRestroom] = useState(null);
-  const [nearestMeetingroom, setNearestMeetingroom] = useState(null);
-  const [nearestCanteen, setNearestCanteen] = useState(null);
+  const [restroomsList, setRestroomsList] = useAtom(restroomsListAtom);
+  const [meetingroomsList, setMeetingroomsList] = useAtom(meetingroomsListAtom);
+  const [canteensList, setCanteensList] = useAtom(canteensListAtom);
+  const [nearestRestroom, setNearestRestroom] = useAtom(nearestRestroomAtom);
+  const [nearestMeetingroom, setNearestMeetingroom] = useAtom(
+    nearestMeetingroomAtom
+  );
+  const [nearestCanteen, setNearestCanteen] = useAtom(nearestCanteenAtom);
 
   const [loading, setLoading] = useState(false);
   const [directionsState, setDirectionsState] = useAtom(directionsStateAtom);
@@ -143,9 +114,6 @@ export default function Map() {
 
   const [directionsCardOpen, setDirectionsCardOpen] = useAtom(
     directionsCardOpenAtom
-  );
-  const [directionsResultState, setDirectionsResultState] = useAtom(
-    directionsResultStateAtom
   );
 
   function saveIDsForDate(newId) {
@@ -177,10 +145,6 @@ export default function Map() {
     mapsIndoorsTransitionLevel: 19,
     showMapMarkers: undefined,
   };
-
-  function delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
 
   const initBlueDot = () => {
     const map = mapboxMapRef.current;
@@ -620,12 +584,6 @@ export default function Map() {
       setNearestCanteen(location);
     });
   }, []);
-  // get appConfig
-  // useEffect(() => {
-  //   mapsindoors.services.AppConfigService.getConfig().then(config => {
-  //     console.log(config);
-  //   });
-  // }, []);
 
   return (
     <>
@@ -664,173 +622,16 @@ export default function Map() {
         handleClick={handleClick}
       />
 
-      {/* Highlight Locations */}
-      <ToggleGroup
-        variant="outline"
-        type="single"
-        className="absolute z-50 top-5 left-8"
-        // className="absolute z-50 bottom-5 right-1/2 transform translate-x-1/2"
-        disabled={buttonDisabledAnimation}
-        onValueChange={(value) => {
-          toast.dismiss();
-          directionsRendererRef.current.setRoute(null);
-          setDirectionsCardOpen(false);
-          if (value !== "") {
-            mapboxMapRef.current.flyTo({
-              center: [mapViewOptions.center.lng, mapViewOptions.center.lat],
-              zoom: 19,
-              pitch: mapViewOptions.pitch,
-              bearing: 99,
-              duration: 1500,
-            });
-            setCategoryValue(value);
-            setIsCategoryToggled(true);
-          } else {
-            setIsCategoryToggled(false);
-          }
-          if (value === "restroom") {
-            mapsIndoorsRef.current.highlight(restroomsList);
-          } else if (value === "meetingroom") {
-            mapsIndoorsRef.current.highlight(meetingroomsList);
-          } else if (value === "canteen") {
-            mapsIndoorsRef.current.highlight(canteensList);
-          } else {
-            mapsIndoorsRef.current.highlight([]);
-          }
-        }}
-      >
-        <ToggleGroupItem
-          value="restroom"
-          aria-label="Toggle restroom"
-          className="bg-white !px-2"
-        >
-          <Image
-            priority
-            src={restroomIcon}
-            alt="restroom"
-            className="h-6 w-6"
-          />
-        </ToggleGroupItem>
+      <CategoriesGroup
+        directionsRendererRef={directionsRendererRef}
+        mapboxMapRef={mapboxMapRef}
+        mapViewOptions={mapViewOptions}
+        positionRef={positionRef}
+        mapsIndoorsRef={mapsIndoorsRef}
+        directionsServiceRef={directionsServiceRef}
+      />
 
-        <ToggleGroupItem
-          value="meetingroom"
-          aria-label="Toggle meeting room"
-          className="bg-white !px-2"
-        >
-          <Image
-            priority
-            src={meetingRoomIcon}
-            alt="meetingroom"
-            className="h-6 w-6"
-          />
-        </ToggleGroupItem>
-
-        <ToggleGroupItem
-          value="canteen"
-          aria-label="Toggle canteen"
-          className="bg-white !px-2"
-        >
-          <Image
-            priority
-            src={canteenIcon}
-            alt="canteen"
-            className="h-[22px] w-[22px] m-[1px]"
-          />
-        </ToggleGroupItem>
-      </ToggleGroup>
-      <Button
-        variant="outline"
-        size="icon"
-        id="directionsButton"
-        disabled={buttonDisabledAnimation || !isCategoryToggled}
-        className="bg-[#3071d9] text-white hover:text-white hover:bg-[#417cdc] absolute z-50 top-5 left-44"
-        onClick={() => {
-          toast.dismiss();
-          setOriginState(null);
-          setOriginValue("");
-          const originCoords = {
-            lat: positionRef.current.coords.latitude,
-            lng: positionRef.current.coords.longitude,
-            floor: 0,
-          };
-          let destCoords;
-
-          if (categoryValue === "restroom") {
-            // restroom
-            setDestState(nearestRestroom);
-            destCoords = {
-              lat: nearestRestroom.properties.anchor.coordinates[1],
-              lng: nearestRestroom.properties.anchor.coordinates[0],
-              floor: nearestRestroom.properties.floor,
-            };
-          } else if (categoryValue === "meetingroom") {
-            // meetingroom
-            setDestState(nearestMeetingroom);
-            destCoords = {
-              lat: nearestMeetingroom.properties.anchor.coordinates[1],
-              lng: nearestMeetingroom.properties.anchor.coordinates[0],
-              floor: nearestMeetingroom.properties.floor,
-            };
-          } else if (categoryValue === "canteen") {
-            // canteen
-            setDestState(nearestCanteen);
-            destCoords = {
-              lat: nearestCanteen.properties.anchor.coordinates[1],
-              lng: nearestCanteen.properties.anchor.coordinates[0],
-              floor: nearestCanteen.properties.floor,
-            };
-          }
-
-          directionsServiceRef.current
-            .getRoute({
-              origin: originCoords,
-              destination: destCoords,
-              travelMode: "DRIVING",
-            })
-            .then((directionsResult) => {
-              setDirectionsResultState(directionsResult);
-              directionsRendererRef.current.setRoute(directionsResult);
-              setDirectionsCardOpen(true);
-            });
-        }}
-      >
-        <CornerUpRight className="h-4 w-4" />
-      </Button>
-      <span className="absolute z-50 top-1 left-44 text-xs text-muted-foreground">
-        Nearest
-      </span>
-
-      {/* directions card */}
-      {directionsCardOpen && (
-        <Card className="absolute z-50 bottom-5 transform-none right-8 left-8 md:right-1/2 md:left-auto md:transform md:translate-x-1/2 bg-primary text-white opacity-55">
-          <CardHeader>
-            <CardTitle className="flex justify-evenly">
-              {originState ? originState.properties.name : "My Position"}{" "}
-              &#x2192; {destState ? destState.properties.name : "My Position"}
-            </CardTitle>
-            {/* <CardDescription>Card Description</CardDescription> */}
-          </CardHeader>
-          <CardContent className="flex items-center justify-evenly">
-            <div className="mr-1">
-              Distance: {directionsResultState.legs[0].distance.value + " ft."}
-            </div>
-            <div className="">
-              Duration: {directionsResultState.legs[0].duration.value + " sec."}
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                directionsRendererRef.current.setRoute(null);
-                setDirectionsCardOpen(false);
-              }}
-            >
-              End Route
-            </Button>
-          </CardFooter>
-        </Card>
-      )}
+      <DirectionsCard directionsRendererRef={directionsRendererRef} />
 
       {/* search switch */}
       {/* <Image
